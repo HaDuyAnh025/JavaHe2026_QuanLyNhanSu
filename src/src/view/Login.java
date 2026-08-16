@@ -1,16 +1,17 @@
 package view;
 
+import database.dao.TaiKhoanDAO;
+import model.Session;
+import model.TaiKhoan;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.sql.SQLException;
 import java.util.regex.Pattern;
-
-// TODO: đổi import DAO cho khớp package thật của bạn, ví dụ:
-// import qlnhansu.database.dao.TaiKhoanDAO;
-// import qlnhansu.model.TaiKhoan;
 
 /**
  * Màn hình Đăng nhập.
@@ -58,38 +59,18 @@ public class Login extends JFrame {
         attachEvents();
     }
 
-    // ================== STYLE (theo Figma) ==================
+    // ================== STYLE (giao dien co ban, khong dung mau) ==================
     private void styleComponents() {
-        // Nền tổng thể
-        rootPanel.setBackground(Color.WHITE);
-        cardPanel.setBackground(Color.WHITE);
-
-        // Nút Đăng nhập: nền xanh, chữ trắng, bo góc
-        btnLogin.setBackground(new Color(0x2F, 0x5B, 0xE8)); // xanh dương giống hình
-        btnLogin.setForeground(Color.WHITE);
-        btnLogin.setFont(new Font("Segoe UI", Font.BOLD, 15));
-        btnLogin.setFocusPainted(false);
-        btnLogin.setBorderPainted(false);
-        btnLogin.setOpaque(true);
-        btnLogin.setCursor(new Cursor(Cursor.HAND_CURSOR));
-
-        // Nút ẩn/hiện mật khẩu: giống icon, không viền
+        // Nut an/hien mat khau: chu "Hien"/"An" thay vi icon, khong ve vien nut
         btnTogglePassword.setBorderPainted(false);
         btnTogglePassword.setContentAreaFilled(false);
         btnTogglePassword.setFocusPainted(false);
         btnTogglePassword.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btnTogglePassword.setText("👁");
+        btnTogglePassword.setText("Hiện");
 
-        // Link "Quên mật khẩu?" và "Yêu cầu cấp tài khoản"
-        Color linkColor = new Color(0x2F, 0x5B, 0xE8);
-        lblForgotPassword.setForeground(linkColor);
+        // Con tro tay khi ruot qua link de nguoi dung biet co the bam duoc
         lblForgotPassword.setCursor(new Cursor(Cursor.HAND_CURSOR));
-
-        lblRegister.setForeground(linkColor);
         lblRegister.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        lblRegister.setFont(lblRegister.getFont().deriveFont(Font.BOLD));
-
-        lblNoAccount.setForeground(new Color(0x66, 0x66, 0x66));
     }
 
     // ================== SỰ KIỆN ==================
@@ -100,10 +81,10 @@ public class Login extends JFrame {
             isPasswordVisible = !isPasswordVisible;
             if (isPasswordVisible) {
                 txtPassword.setEchoChar((char) 0); // hiện chữ thật
-                btnTogglePassword.setText("🙈");
+                btnTogglePassword.setText("Ẩn");
             } else {
                 txtPassword.setEchoChar(defaultEchoChar); // ẩn lại
-                btnTogglePassword.setText("👁");
+                btnTogglePassword.setText("Hiện");
             }
         });
 
@@ -139,10 +120,8 @@ public class Login extends JFrame {
     }
 
     // ================== LOGIC ĐĂNG NHẬP ==================
-    // LƯU Ý: CHƯA nối CSDL, nên bước này CHỈ kiểm tra ĐÚNG ĐỊNH DẠNG
-    // (email hợp lệ + mật khẩu đủ độ dài), KHÔNG kiểm tra tài khoản
-    // có thật sự tồn tại hay mật khẩu có khớp hay không.
-    // Nhập đúng cú pháp -> coi như đăng nhập thành công -> vào Dashboard.
+    // Buoc 1: kiem tra dinh dang (email hop le + mat khau du do dai).
+    // Buoc 2: kiem tra that voi CSDL qua TaiKhoanDAO (BCrypt.checkpw + trang thai tai khoan).
     private void handleLogin() {
         String username = txtUsername.getText() == null ? "" : txtUsername.getText().trim();
         String password = new String(txtPassword.getPassword());
@@ -169,18 +148,27 @@ public class Login extends JFrame {
             return;
         }
 
-        // ---- TODO: sau này nối DAO thật, thay đoạn dưới bằng: ----
-        // TaiKhoanDAO dao = new TaiKhoanDAO();
-        // TaiKhoan tk = dao.checkLogin(username, password);
-        // if (tk != null) { ... mo Dashboard ... } else { showError(...); }
-
-        // ---- Đúng định dạng là cho vào thẳng Dashboard (demo, chưa check DB) ----
-        if (chkRemember.isSelected()) {
-            // TODO: lưu thông tin đăng nhập (vd: Preferences API hoặc file cấu hình)
-        }
+        // ---- Kiem tra voi CSDL (BCrypt.checkpw + trang thai tai khoan) ----
         btnLogin.setEnabled(false);
-        new MainFrame().setVisible(true); // mo man hinh chinh (co Dashboard ben trong)
-        this.dispose();                   // dong man hinh Login
+        try {
+            TaiKhoan taiKhoan = new TaiKhoanDAO().checkLogin(username, password);
+            if (taiKhoan == null) {
+                showError("Sai tên đăng nhập hoặc mật khẩu, hoặc tài khoản đã bị khóa.");
+                return;
+            }
+
+            if (chkRemember.isSelected()) {
+                // TODO: lưu thông tin đăng nhập (vd: Preferences API hoặc file cấu hình)
+            }
+
+            Session.setCurrentAccount(taiKhoan);
+            new MainFrame().setVisible(true); // mo man hinh chinh (co Dashboard ben trong)
+            this.dispose();                   // dong man hinh Login
+        } catch (SQLException e) {
+            showError("Không thể kết nối cơ sở dữ liệu: " + e.getMessage());
+        } finally {
+            btnLogin.setEnabled(true);
+        }
     }
 
     private void showError(String message) {

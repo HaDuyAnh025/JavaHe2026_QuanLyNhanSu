@@ -1,0 +1,168 @@
+package model;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+
+public class NhanVien {
+    private int maNV;
+    private String hoTen;
+    private LocalDate ngaySinh;
+    private String gioiTinh; // "Nam" | "Nữ" | "Khác"
+    private String soCCCD;
+    private String soDienThoai;
+    private String email;
+    private String diaChi;
+    private String avatarPath;
+
+    private Integer maPB;
+    private String tenPhongBan; // do JOIN nap vao, chi de hien thi
+    private Integer maCV;
+    private String tenChucVu;   // do JOIN nap vao, chi de hien thi
+
+    private LocalDate ngayVaoLam;
+    private String loaiHopDong;
+    private BigDecimal mucLuongCoBan;
+
+    private String trangThai; // "DangLamViec" | "NghiViec" | "TamNghi"
+
+    public int getMaNV() {
+        return maNV;
+    }
+
+    public void setMaNV(int maNV) {
+        this.maNV = maNV;
+    }
+
+    public String getHoTen() {
+        return hoTen;
+    }
+
+    public void setHoTen(String hoTen) {
+        this.hoTen = hoTen;
+    }
+
+    public LocalDate getNgaySinh() {
+        return ngaySinh;
+    }
+
+    public void setNgaySinh(LocalDate ngaySinh) {
+        this.ngaySinh = ngaySinh;
+    }
+
+    public String getGioiTinh() {
+        return gioiTinh;
+    }
+
+    public void setGioiTinh(String gioiTinh) {
+        this.gioiTinh = gioiTinh;
+    }
+
+    public String getSoCCCD() {
+        return soCCCD;
+    }
+
+    public void setSoCCCD(String soCCCD) {
+        this.soCCCD = soCCCD;
+    }
+
+    public String getSoDienThoai() {
+        return soDienThoai;
+    }
+
+    public void setSoDienThoai(String soDienThoai) {
+        this.soDienThoai = soDienThoai;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getDiaChi() {
+        return diaChi;
+    }
+
+    public void setDiaChi(String diaChi) {
+        this.diaChi = diaChi;
+    }
+
+    public String getAvatarPath() {
+        return avatarPath;
+    }
+
+    public void setAvatarPath(String avatarPath) {
+        this.avatarPath = avatarPath;
+    }
+
+    public Integer getMaPB() {
+        return maPB;
+    }
+
+    public void setMaPB(Integer maPB) {
+        this.maPB = maPB;
+    }
+
+    public String getTenPhongBan() {
+        return tenPhongBan;
+    }
+
+    public void setTenPhongBan(String tenPhongBan) {
+        this.tenPhongBan = tenPhongBan;
+    }
+
+    public Integer getMaCV() {
+        return maCV;
+    }
+
+    public void setMaCV(Integer maCV) {
+        this.maCV = maCV;
+    }
+
+    public String getTenChucVu() {
+        return tenChucVu;
+    }
+
+    public void setTenChucVu(String tenChucVu) {
+        this.tenChucVu = tenChucVu;
+    }
+
+    public LocalDate getNgayVaoLam() {
+        return ngayVaoLam;
+    }
+
+    public void setNgayVaoLam(LocalDate ngayVaoLam) {
+        this.ngayVaoLam = ngayVaoLam;
+    }
+
+    public String getLoaiHopDong() {
+        return loaiHopDong;
+    }
+
+    public void setLoaiHopDong(String loaiHopDong) {
+        this.loaiHopDong = loaiHopDong;
+    }
+
+    public BigDecimal getMucLuongCoBan() {
+        return mucLuongCoBan;
+    }
+
+    public void setMucLuongCoBan(BigDecimal mucLuongCoBan) {
+        this.mucLuongCoBan = mucLuongCoBan;
+    }
+
+    public String getTrangThai() {
+        return trangThai;
+    }
+
+    public void setTrangThai(String trangThai) {
+        this.trangThai = trangThai;
+    }
+
+    @Override
+    public String toString() {
+        return hoTen + " (Mã NV: " + maNV + ")";
+    }
+}

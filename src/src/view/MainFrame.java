@@ -1,6 +1,11 @@
 package view;
 
+import model.NhanVien;
+import model.Session;
+import model.TaiKhoan;
+import view.panels.AccountManagementPanel;
 import view.panels.AddEmployeesPanel;
+import view.panels.CategoryManagementPanel;
 import view.panels.DashboardPanel;
 import view.panels.ListEmployeesPanel;
 
@@ -34,7 +39,7 @@ public class MainFrame extends JFrame {
     private JButton tổngQuanButton;          // Dashboard
     private JButton btnQuanLyNhanVien;       // "Quan ly" (danh sach + tim kiem nhanh + loc nang cao gop chung)
     private JButton phânQuyềnButton;         // Phan quyen (chua co man hinh rieng)
-    private JButton càiĐặtButton;            // Cai dat (chua co man hinh rieng)
+    private JButton càiĐặtButton;            // Danh muc Phong ban/Chuc vu
     private JButton đăngXuấtButton;
 
     private JPanel contentPanel;             // container CardLayout
@@ -43,15 +48,21 @@ public class MainFrame extends JFrame {
     public static final String CARD_DASHBOARD = "DASHBOARD";
     public static final String CARD_LIST_EMPLOYEES = "LIST_EMPLOYEES";
     public static final String CARD_ADD_EMPLOYEE = "ADD_EMPLOYEE";
+    public static final String CARD_ACCOUNTS = "ACCOUNTS";
+    public static final String CARD_CATEGORIES = "CATEGORIES";
 
     private CardLayout cardLayout;
 
     private DashboardPanel dashboardPanel;
     private ListEmployeesPanel listEmployeesPanel;
     private AddEmployeesPanel addEmployeesPanel;
+    private AccountManagementPanel accountManagementPanel;
+    private CategoryManagementPanel categoryManagementPanel;
 
     // Nut nav dang active, dung de bat/tat style highlight
     private JButton activeNavButton;
+
+    private final TaiKhoan currentAccount = Session.getCurrentAccount();
 
     public MainFrame() {
         setTitle("HR Management");
@@ -64,9 +75,25 @@ public class MainFrame extends JFrame {
         setupContentCards();
         setupNavigation();
         setupTopBar();
+        applyRolePermissions();
 
         // Man hinh mac dinh khi mo app
         showCard(CARD_DASHBOARD, tổngQuanButton);
+    }
+
+    /**
+     * Phan quyen theo vai tro:
+     *  - Admin: Dashboard, Quan ly (them/sua/xoa), Phan quyen, Danh muc. KHONG co Thong bao/Tro giup.
+     *  - NhanVien (nhan vien phong nhan su): Dashboard, Quan ly (them/sua/xoa). Co Thong bao/Tro giup.
+     *    KHONG thay Phan quyen, Danh muc.
+     */
+    private void applyRolePermissions() {
+        boolean isAdmin = currentAccount != null && currentAccount.isAdmin();
+        phânQuyềnButton.setVisible(isAdmin);
+        càiĐặtButton.setVisible(isAdmin);
+        thôngBáoButton.setVisible(!isAdmin);
+        trợGiúpButton.setVisible(!isAdmin);
+        avatarButton.setText(currentAccount == null ? "..." : currentAccount.getTenDangNhap());
     }
 
     /** Khoi tao CardLayout va them tat ca cac panel noi dung vao contentPanel. */
@@ -77,13 +104,24 @@ public class MainFrame extends JFrame {
         dashboardPanel = new DashboardPanel();
         listEmployeesPanel = new ListEmployeesPanel();
         addEmployeesPanel = new AddEmployeesPanel();
+        accountManagementPanel = new AccountManagementPanel();
+        categoryManagementPanel = new CategoryManagementPanel();
 
         contentPanel.add(dashboardPanel.getRootPanel(), CARD_DASHBOARD);
         contentPanel.add(listEmployeesPanel.getRootPanel(), CARD_LIST_EMPLOYEES);
         contentPanel.add(addEmployeesPanel.getRootPanel(), CARD_ADD_EMPLOYEE);
+        contentPanel.add(accountManagementPanel.getRootPanel(), CARD_ACCOUNTS);
+        contentPanel.add(categoryManagementPanel.getRootPanel(), CARD_CATEGORIES);
 
         // Cho phep cac panel con dieu huong nguoc lai qua MainFrame
-        listEmployeesPanel.setOnAddEmployeeRequested(() -> showCard(CARD_ADD_EMPLOYEE, btnQuanLyNhanVien));
+        listEmployeesPanel.setOnAddEmployeeRequested(() -> {
+            addEmployeesPanel.resetToAddMode();
+            showCard(CARD_ADD_EMPLOYEE, btnQuanLyNhanVien);
+        });
+        listEmployeesPanel.setOnEditEmployeeRequested((NhanVien nv) -> {
+            addEmployeesPanel.loadForEdit(nv);
+            showCard(CARD_ADD_EMPLOYEE, btnQuanLyNhanVien);
+        });
         addEmployeesPanel.setOnSavedOrCancelled(() -> {
             listEmployeesPanel.reloadData(); // ve lai trang thai danh sach binh thuong
             showCard(CARD_LIST_EMPLOYEES, btnQuanLyNhanVien);
@@ -101,16 +139,15 @@ public class MainFrame extends JFrame {
             showCard(CARD_LIST_EMPLOYEES, btnQuanLyNhanVien);
         });
 
-        phânQuyềnButton.addActionListener(e ->
-                JOptionPane.showMessageDialog(this, "Man hinh Phan quyen dang duoc xay dung."));
-        càiĐặtButton.addActionListener(e ->
-                JOptionPane.showMessageDialog(this, "Man hinh Cai dat dang duoc xay dung."));
+        phânQuyềnButton.addActionListener(e -> showCard(CARD_ACCOUNTS, phânQuyềnButton));
+        càiĐặtButton.addActionListener(e -> showCard(CARD_CATEGORIES, càiĐặtButton));
 
         đăngXuấtButton.addActionListener(e -> {
             int confirm = JOptionPane.showConfirmDialog(this,
                     "Ban co chac muon dang xuat?", "Dang xuat",
                     JOptionPane.YES_NO_OPTION);
             if (confirm == JOptionPane.YES_OPTION) {
+                Session.clear();
                 dispose();                       // dong man hinh chinh
                 new Login().setVisible(true);    // ve lai man hinh dang nhap
             }
@@ -132,8 +169,11 @@ public class MainFrame extends JFrame {
                 JOptionPane.showMessageDialog(this, "Chua co thong bao moi."));
         trợGiúpButton.addActionListener(e ->
                 JOptionPane.showMessageDialog(this, "Lien he quan tri vien de duoc ho tro."));
-        avatarButton.addActionListener(e ->
-                JOptionPane.showMessageDialog(this, "TODO: menu tai khoan (doi mat khau, dang xuat...)"));
+        avatarButton.addActionListener(e -> {
+            String info = currentAccount == null ? "Chưa đăng nhập"
+                    : "Tài khoản: " + currentAccount.getTenDangNhap() + "\nVai trò: " + currentAccount.getVaiTro();
+            JOptionPane.showMessageDialog(this, info, "Thông tin tài khoản", JOptionPane.INFORMATION_MESSAGE);
+        });
     }
 
     private void performQuickSearch() {

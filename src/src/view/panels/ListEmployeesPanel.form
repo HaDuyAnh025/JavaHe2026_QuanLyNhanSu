@@ -46,8 +46,6 @@
               <grid row="0" column="2" row-span="2" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <background color="-13199872"/>
-              <foreground color="-1"/>
               <text value="+ Thêm nhân viên"/>
             </properties>
           </component>
@@ -82,7 +80,7 @@
         <children>
 
           <!-- ===== Bang loc nang cao (mac dinh AN, hien khi bam nut "Loc") ===== -->
-          <grid id="filterCard" binding="filterPanel" layout-manager="GridLayoutManager" row-count="10" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="8">
+          <grid id="filterCard" binding="filterPanel" layout-manager="GridLayoutManager" row-count="9" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="8">
             <margin top="16" left="16" bottom="16" right="16"/>
             <constraints>
               <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="0" anchor="0" fill="2" indent="0" use-parent-layout="false">
@@ -92,7 +90,7 @@
             <properties>
               <visible value="false"/>
             </properties>
-            <border type="line" title="Bộ lọc tìm kiếm" color="-3355444"/>
+            <border type="line" title="Bộ lọc tìm kiếm"/>
             <children>
 
               <component id="lblPhongBanF" class="javax.swing.JLabel">
@@ -156,6 +154,7 @@
                     <item value="Tất cả trạng thái"/>
                     <item value="Đang làm việc"/>
                     <item value="Nghỉ việc"/>
+                    <item value="Tạm nghỉ"/>
                   </model>
                 </properties>
               </component>
@@ -168,10 +167,10 @@
                   <text value="Giới tính"/>
                 </properties>
               </component>
-              <grid id="3db5e" layout-manager="GridLayoutManager" row-count="1" column-count="3" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+              <grid id="3db5e" layout-manager="GridLayoutManager" row-count="1" column-count="4" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
                 <margin top="0" left="0" bottom="0" right="0"/>
                 <constraints>
-                  <grid row="7" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                  <grid row="7" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
                 </constraints>
                 <properties/>
                 <border type="none"/>
@@ -201,44 +200,93 @@
                       <text value="Nữ"/>
                     </properties>
                   </component>
+                  <component id="f3a71" class="javax.swing.JRadioButton" binding="khácRadioButton" default-binding="true">
+                    <constraints>
+                      <grid row="0" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                    </constraints>
+                    <properties>
+                      <text value="Khác"/>
+                    </properties>
+                  </component>
                 </children>
               </grid>
 
-              <component id="lblThoiGianF" class="javax.swing.JLabel">
+              <grid id="filterActionsRow" layout-manager="GridLayoutManager" row-count="1" column-count="2" same-size-horizontally="true" same-size-vertically="false" hgap="8" vgap="-1">
+                <margin top="0" left="0" bottom="0" right="0"/>
                 <constraints>
-                  <grid row="8" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+                  <grid row="8" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
                 </constraints>
-                <properties>
-                  <text value="Thời gian vào làm"/>
-                </properties>
-              </component>
-
-              <component id="applyFilterBtn" class="javax.swing.JButton" binding="ápDụngLọcButton" default-binding="true">
-                <constraints>
-                  <grid row="9" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
-                </constraints>
-                <properties>
-                  <background color="-13199872"/>
-                  <foreground color="-1"/>
-                  <text value="Áp dụng bộ lọc"/>
-                </properties>
-              </component>
+                <properties/>
+                <border type="none"/>
+                <children>
+                  <component id="applyFilterBtn" class="javax.swing.JButton" binding="ápDụngLọcButton" default-binding="true">
+                    <constraints>
+                      <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
+                    </constraints>
+                    <properties>
+                      <text value="Áp dụng"/>
+                    </properties>
+                  </component>
+                  <component id="clearFilterBtn" class="javax.swing.JButton" binding="xóaLọcButton" default-binding="true">
+                    <constraints>
+                      <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
+                    </constraints>
+                    <properties>
+                      <text value="Xóa lọc"/>
+                    </properties>
+                  </component>
+                </children>
+              </grid>
 
             </children>
           </grid>
 
           <!-- ===== Bang danh sach / ket qua ===== -->
-          <grid id="tableCard" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+          <grid id="tableCard" layout-manager="GridLayoutManager" row-count="2" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="8">
             <margin top="8" left="8" bottom="8" right="8"/>
             <constraints>
               <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties/>
-            <border type="line" color="-3355444"/>
+            <border type="line"/>
             <children>
+
+              <!-- ===== Hang nut Sua/Xoa thao tac tren dong dang chon trong bang ===== -->
+              <grid id="rowActionsBar" layout-manager="GridLayoutManager" row-count="1" column-count="3" same-size-horizontally="false" same-size-vertically="false" hgap="8" vgap="-1">
+                <margin top="0" left="0" bottom="0" right="0"/>
+                <constraints>
+                  <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                </constraints>
+                <properties/>
+                <border type="none"/>
+                <children>
+                  <hspacer id="rowActionsSpacer">
+                    <constraints>
+                      <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="1" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                    </constraints>
+                  </hspacer>
+                  <component id="editBtn" class="javax.swing.JButton" binding="sửaButton" default-binding="true">
+                    <constraints>
+                      <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                    </constraints>
+                    <properties>
+                      <text value="Sửa"/>
+                    </properties>
+                  </component>
+                  <component id="deleteBtn" class="javax.swing.JButton" binding="xóaButton" default-binding="true">
+                    <constraints>
+                      <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+                    </constraints>
+                    <properties>
+                      <text value="Xóa"/>
+                    </properties>
+                  </component>
+                </children>
+              </grid>
+
               <scrollpane id="bf90">
                 <constraints>
-                  <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                  <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
                 </constraints>
                 <properties/>
                 <border type="none"/>
@@ -339,6 +387,7 @@
         <member id="d59f0"/>
         <member id="a9111"/>
         <member id="8c116"/>
+        <member id="f3a71"/>
       </members>
     </group>
   </buttonGroups>

@@ -1,0 +1,11 @@
+# Anh dai dien nhan vien duoc luu tai runtime, khong phai source code
+/avatars/
+
+# Nhat ky sua/xoa nhan vien, sinh ra khi chay app
+/logs/
+
+# Build output cua IntelliJ
+/out/
+
+# Thong tin ket noi DB (co the chua mat khau that) - moi may tu tao tu db.properties.example
+/src/src/database/db.properties
