@@ -30,8 +30,6 @@ public class DashboardPanel extends JPanel {
     private JLabel lblNhanVienMoiDelta;
 
     private JPanel chartPanel;         // holder de nhung thong ke theo phong ban (dang danh sach, khong bieu do)
-    private JPanel activityListPanel;  // holder de nhung danh sach hoat dong gan day
-    private JButton xemTấtCảButton;
 
     private final NhanVienDAO nhanVienDAO = new NhanVienDAO();
     private final PhongBanDAO phongBanDAO = new PhongBanDAO();
@@ -43,7 +41,6 @@ public class DashboardPanel extends JPanel {
 
     private void setupActions() {
         tảiBáoCáoButton.addActionListener(e -> exportReport());
-        xemTấtCảButton.addActionListener(e -> showAllActivities());
     }
 
     private void loadDashboardData() {
@@ -90,10 +87,6 @@ public class DashboardPanel extends JPanel {
 
     private void exportReport() {
         // TODO: xuat bao cao (PDF/Excel...)
-    }
-
-    private void showAllActivities() {
-        // TODO: mo dialog hoac chuyen sang man hinh danh sach hoat dong day du
     }
 
     public JPanel getRootPanel() {

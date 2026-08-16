@@ -10,7 +10,10 @@
     <children>
 
       <!-- ===== Header: doi trang thai giua "Danh sach nhan vien" va "Ket qua tim kiem" bang code =====
-           Nut "Loc" va "Xuat" LUON hien thi o trang Quan ly (khong con an theo che do). -->
+           Nut "Loc" va "Xuat" LUON hien thi o trang Quan ly (khong con an theo che do).
+           Hang tren: "+ Them nhan vien" / "Xuat". Hang duoi: tieu de (trai), o tim kiem
+           nhanh + nut "Tim kiem" + nut "Loc" (phai) - tim kiem chi lien quan trang nay
+           nen dat luon o day thay vi thanh tren cua MainFrame. -->
       <grid id="51006" layout-manager="GridLayoutManager" row-count="2" column-count="5" same-size-horizontally="false" same-size-vertically="false" hgap="8" vgap="4">
         <margin top="0" left="0" bottom="0" right="0"/>
         <constraints>
@@ -43,26 +46,45 @@
           </hspacer>
           <component id="29d51" class="javax.swing.JButton" binding="thêmNhânViênButton" default-binding="true">
             <constraints>
-              <grid row="0" column="2" row-span="2" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+              <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
               <text value="+ Thêm nhân viên"/>
             </properties>
           </component>
-          <component id="lockBtn" class="javax.swing.JButton" binding="lọcButton" default-binding="true">
-            <constraints>
-              <grid row="0" column="3" row-span="2" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
-            </constraints>
-            <properties>
-              <text value="Lọc"/>
-            </properties>
-          </component>
           <component id="xuatBtn" class="javax.swing.JButton" binding="xuấtButton" default-binding="true">
             <constraints>
-              <grid row="0" column="4" row-span="2" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+              <grid row="0" column="4" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
               <text value="Xuất"/>
+            </properties>
+          </component>
+          <component id="c66fa" class="javax.swing.JTextField" binding="tìmKiếmNhanhTextField" default-binding="true">
+            <constraints>
+              <grid row="1" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
+                <preferred-size width="200" height="-1"/>
+              </grid>
+            </constraints>
+            <properties>
+              <text value=""/>
+              <toolTipText value="Tìm theo tên, số điện thoại, email hoặc mã NV"/>
+            </properties>
+          </component>
+          <component id="f2a91" class="javax.swing.JButton" binding="tìmKiếmButton" default-binding="true">
+            <constraints>
+              <grid row="1" column="3" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <text value="Tìm kiếm"/>
+            </properties>
+          </component>
+          <component id="lockBtn" class="javax.swing.JButton" binding="lọcButton" default-binding="true">
+            <constraints>
+              <grid row="1" column="4" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <text value="Lọc"/>
             </properties>
           </component>
         </children>
@@ -242,7 +264,7 @@
           </grid>
 
           <!-- ===== Bang danh sach / ket qua ===== -->
-          <grid id="tableCard" layout-manager="GridLayoutManager" row-count="2" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="8">
+          <grid id="tableCard" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="8">
             <margin top="8" left="8" bottom="8" right="8"/>
             <constraints>
               <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
@@ -251,42 +273,9 @@
             <border type="line"/>
             <children>
 
-              <!-- ===== Hang nut Sua/Xoa thao tac tren dong dang chon trong bang ===== -->
-              <grid id="rowActionsBar" layout-manager="GridLayoutManager" row-count="1" column-count="3" same-size-horizontally="false" same-size-vertically="false" hgap="8" vgap="-1">
-                <margin top="0" left="0" bottom="0" right="0"/>
-                <constraints>
-                  <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
-                </constraints>
-                <properties/>
-                <border type="none"/>
-                <children>
-                  <hspacer id="rowActionsSpacer">
-                    <constraints>
-                      <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="1" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
-                    </constraints>
-                  </hspacer>
-                  <component id="editBtn" class="javax.swing.JButton" binding="sửaButton" default-binding="true">
-                    <constraints>
-                      <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
-                    </constraints>
-                    <properties>
-                      <text value="Sửa"/>
-                    </properties>
-                  </component>
-                  <component id="deleteBtn" class="javax.swing.JButton" binding="xóaButton" default-binding="true">
-                    <constraints>
-                      <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
-                    </constraints>
-                    <properties>
-                      <text value="Xóa"/>
-                    </properties>
-                  </component>
-                </children>
-              </grid>
-
               <scrollpane id="bf90">
                 <constraints>
-                  <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+                  <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
                 </constraints>
                 <properties/>
                 <border type="none"/>

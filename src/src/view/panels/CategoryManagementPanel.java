@@ -7,10 +7,13 @@ import model.DanhMuc;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableCellRenderer;
 import java.awt.*;
 import java.sql.SQLException;
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * Man hinh "Danh muc" (thay cho "Cai dat" cu): quan ly Phong ban va Chuc vu.
@@ -33,11 +36,15 @@ public class CategoryManagementPanel extends JPanel {
 
     /** 1 tab CRUD dung chung cho Phong ban / Chuc vu. */
     private static class CategoryTab extends JPanel {
+        private static final Pattern MA_PATTERN = Pattern.compile("^[A-Z]{1,5}$");
+        private static final int MAX_VISIBLE_ROWS = 8;
+
         private final DanhMucDAO dao;
         private final String nounLower;
 
         private final DefaultTableModel tableModel;
         private final JTable table;
+        private final JScrollPane tableScroll;
         private List<? extends DanhMuc> currentRows;
 
         CategoryTab(DanhMucDAO dao, String nounLower) {
@@ -46,34 +53,32 @@ public class CategoryManagementPanel extends JPanel {
             setLayout(new BorderLayout(0, 8));
             setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
 
-            String[] columns = {"Mã", "Tên", "Mô tả"};
+            JButton addButton = new JButton("+ Thêm " + nounLower);
+            addButton.addActionListener(e -> openEditDialog(null));
+            JPanel headerBar = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
+            headerBar.add(addButton);
+            add(headerBar, BorderLayout.NORTH);
+
+            String[] columns = {"Mã", "Tên", "Mô tả", "Thao tác"};
             tableModel = new DefaultTableModel(columns, 0) {
                 @Override
                 public boolean isCellEditable(int row, int col) {
-                    return false;
+                    return col == 3;
                 }
             };
             table = new JTable(tableModel);
-            table.setRowHeight(26);
-            add(new JScrollPane(table), BorderLayout.CENTER);
+            table.setRowHeight(32);
+            table.getColumnModel().getColumn(3).setCellRenderer(new ActionCellRenderer());
+            table.getColumnModel().getColumn(3).setCellEditor(new ActionCellEditor());
+            table.getColumnModel().getColumn(3).setPreferredWidth(140);
+            table.getColumnModel().getColumn(3).setMaxWidth(140);
 
-            JButton addButton = new JButton("+ Thêm " + nounLower);
-            addButton.addActionListener(e -> openEditDialog(null));
-            JButton editButton = new JButton("Sửa");
-            editButton.addActionListener(e -> {
-                DanhMuc selected = getSelected();
-                if (selected != null) {
-                    openEditDialog(selected);
-                }
-            });
-            JButton deleteButton = new JButton("Xóa");
-            deleteButton.addActionListener(e -> deleteSelected());
-
-            JPanel bar = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
-            bar.add(addButton);
-            bar.add(editButton);
-            bar.add(deleteButton);
-            add(bar, BorderLayout.SOUTH);
+            // Chi cao vua du so hang hien co (toi da MAX_VISIBLE_ROWS), tranh
+            // de lai 1 khoang trong lon phia duoi khi danh muc con it hang.
+            tableScroll = new JScrollPane(table);
+            JPanel centerHolder = new JPanel(new BorderLayout());
+            centerHolder.add(tableScroll, BorderLayout.NORTH);
+            add(centerHolder, BorderLayout.CENTER);
 
             reload();
         }
@@ -83,27 +88,34 @@ public class CategoryManagementPanel extends JPanel {
                 currentRows = dao.findAll();
                 tableModel.setRowCount(0);
                 for (DanhMuc dm : currentRows) {
-                    tableModel.addRow(new Object[]{dm.getId(), dm.getTen(), dm.getMoTa() == null ? "" : dm.getMoTa()});
+                    tableModel.addRow(new Object[]{dm.getId(), dm.getTen(), dm.getMoTa() == null ? "" : dm.getMoTa(), null});
                 }
+                updateTableHeight();
             } catch (SQLException e) {
                 showError("Không tải được danh sách: " + e.getMessage());
             }
         }
 
-        private DanhMuc getSelected() {
-            int row = table.getSelectedRow();
-            if (row < 0 || currentRows == null || row >= currentRows.size()) {
-                JOptionPane.showMessageDialog(this, "Vui lòng chọn một " + nounLower + " trong bảng.");
-                return null;
-            }
-            return currentRows.get(row);
+        /** Tinh lai chieu cao khung bang theo so hang thuc te (toi da MAX_VISIBLE_ROWS, con lai se tu cuon). */
+        private void updateTableHeight() {
+            int rowCount = Math.max(tableModel.getRowCount(), 1);
+            int visibleRows = Math.min(rowCount, MAX_VISIBLE_ROWS);
+            int headerHeight = table.getTableHeader().getPreferredSize().height;
+            int height = headerHeight + visibleRows * table.getRowHeight() + 2;
+            tableScroll.setPreferredSize(new Dimension(10, height));
+            revalidate();
         }
 
         private void openEditDialog(DanhMuc editing) {
+            JTextField maField = new JTextField(editing == null ? "" : editing.getId());
             JTextField tenField = new JTextField(editing == null ? "" : editing.getTen());
             JTextField moTaField = new JTextField(editing == null || editing.getMoTa() == null ? "" : editing.getMoTa());
 
+            maField.setEditable(editing == null);
+
             JPanel form = new JPanel(new GridLayout(0, 1, 4, 4));
+            form.add(new JLabel("Mã " + nounLower + " (tối đa 5 chữ cái in hoa):"));
+            form.add(maField);
             form.add(new JLabel("Tên " + nounLower + ":"));
             form.add(tenField);
             form.add(new JLabel("Mô tả:"));
@@ -125,24 +137,27 @@ public class CategoryManagementPanel extends JPanel {
 
             try {
                 if (editing == null) {
-                    dao.insert(ten, moTa.isEmpty() ? null : moTa);
+                    String ma = maField.getText().trim().toUpperCase();
+                    if (!MA_PATTERN.matcher(ma).matches()) {
+                        JOptionPane.showMessageDialog(this, "Mã " + nounLower + " phải là chữ in hoa (A-Z), tối đa 5 ký tự.");
+                        return;
+                    }
+                    dao.insert(ma, ten, moTa.isEmpty() ? null : moTa);
                 } else {
                     dao.update(editing.getId(), ten, moTa.isEmpty() ? null : moTa);
                 }
                 reload();
             } catch (SQLIntegrityConstraintViolationException e) {
-                JOptionPane.showMessageDialog(this, "Tên " + nounLower + " này đã tồn tại.",
-                        "Lỗi", JOptionPane.ERROR_MESSAGE);
+                String msg = editing == null
+                        ? "Mã hoặc tên " + nounLower + " này đã tồn tại."
+                        : "Tên " + nounLower + " này đã tồn tại.";
+                JOptionPane.showMessageDialog(this, msg, "Lỗi", JOptionPane.ERROR_MESSAGE);
             } catch (SQLException e) {
                 showError("Không lưu được: " + e.getMessage());
             }
         }
 
-        private void deleteSelected() {
-            DanhMuc selected = getSelected();
-            if (selected == null) {
-                return;
-            }
+        private void deleteEntry(DanhMuc selected) {
             try {
                 int usage = dao.countUsage(selected.getId());
                 String msg = usage > 0
@@ -163,6 +178,59 @@ public class CategoryManagementPanel extends JPanel {
 
         private void showError(String message) {
             JOptionPane.showMessageDialog(this, message, "Lỗi", JOptionPane.ERROR_MESSAGE);
+        }
+
+        /** Renderer: hien 2 nut Sua/Xoa o cot "Thao tac" cho moi hang. */
+        private static class ActionCellRenderer extends JPanel implements TableCellRenderer {
+            ActionCellRenderer() {
+                super(new FlowLayout(FlowLayout.CENTER, 4, 2));
+                add(new JButton("Sửa"));
+                add(new JButton("Xóa"));
+            }
+
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
+                                                             boolean hasFocus, int row, int column) {
+                return this;
+            }
+        }
+
+        /** Editor: bam that vao nut Sua/Xoa o cot "Thao tac" de thao tac tren dung hang do. */
+        private class ActionCellEditor extends AbstractCellEditor implements TableCellEditor {
+            private final JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 4, 2));
+            private int editingRow = -1;
+
+            ActionCellEditor() {
+                JButton editButton = new JButton("Sửa");
+                JButton deleteButton = new JButton("Xóa");
+                editButton.addActionListener(e -> {
+                    int row = editingRow;
+                    fireEditingStopped();
+                    if (row >= 0 && currentRows != null && row < currentRows.size()) {
+                        openEditDialog(currentRows.get(row));
+                    }
+                });
+                deleteButton.addActionListener(e -> {
+                    int row = editingRow;
+                    fireEditingStopped();
+                    if (row >= 0 && currentRows != null && row < currentRows.size()) {
+                        deleteEntry(currentRows.get(row));
+                    }
+                });
+                panel.add(editButton);
+                panel.add(deleteButton);
+            }
+
+            @Override
+            public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
+                editingRow = row;
+                return panel;
+            }
+
+            @Override
+            public Object getCellEditorValue() {
+                return null;
+            }
         }
     }
 }

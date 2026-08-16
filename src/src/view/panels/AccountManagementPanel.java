@@ -7,6 +7,8 @@ import util.ValidationUtil;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableCellRenderer;
 import java.awt.*;
 import java.sql.SQLException;
 import java.util.List;
@@ -18,6 +20,8 @@ import java.util.List;
  * moi hoan toan, khong can khop thiet ke .form co san.
  */
 public class AccountManagementPanel extends JPanel {
+
+    private static final int ACTION_COLUMN = 4;
 
     private final TaiKhoanDAO taiKhoanDAO = new TaiKhoanDAO();
 
@@ -31,7 +35,6 @@ public class AccountManagementPanel extends JPanel {
 
         add(buildHeader(), BorderLayout.NORTH);
         add(buildTable(), BorderLayout.CENTER);
-        add(buildActionBar(), BorderLayout.SOUTH);
 
         reloadData();
     }
@@ -41,43 +44,37 @@ public class AccountManagementPanel extends JPanel {
         title.setFont(title.getFont().deriveFont(Font.BOLD, 20f));
         JLabel subtitle = new JLabel("Tạo tài khoản, khóa/mở khóa, gán vai trò Admin hoặc Nhân viên.");
 
-        JPanel panel = new JPanel();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        JPanel titles = new JPanel();
+        titles.setLayout(new BoxLayout(titles, BoxLayout.Y_AXIS));
         title.setAlignmentX(Component.LEFT_ALIGNMENT);
         subtitle.setAlignmentX(Component.LEFT_ALIGNMENT);
-        panel.add(title);
-        panel.add(subtitle);
-        return panel;
-    }
+        titles.add(title);
+        titles.add(subtitle);
 
-    private JComponent buildTable() {
-        String[] columns = {"Mã TK", "Tên đăng nhập", "Vai trò", "Trạng thái"};
-        tableModel = new DefaultTableModel(columns, 0) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
-        };
-        accountTable = new JTable(tableModel);
-        accountTable.setRowHeight(28);
-        return new JScrollPane(accountTable);
-    }
-
-    private JComponent buildActionBar() {
         JButton createButton = new JButton("+ Tạo tài khoản mới");
         createButton.addActionListener(e -> openCreateAccountDialog());
 
-        JButton toggleLockButton = new JButton("Khóa / Mở khóa");
-        toggleLockButton.addActionListener(e -> toggleLockSelected());
+        JPanel header = new JPanel(new BorderLayout());
+        header.add(titles, BorderLayout.WEST);
+        header.add(createButton, BorderLayout.EAST);
+        return header;
+    }
 
-        JButton changeRoleButton = new JButton("Đổi vai trò");
-        changeRoleButton.addActionListener(e -> changeRoleSelected());
-
-        JPanel bar = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
-        bar.add(createButton);
-        bar.add(toggleLockButton);
-        bar.add(changeRoleButton);
-        return bar;
+    private JComponent buildTable() {
+        String[] columns = {"Mã TK", "Tên đăng nhập", "Vai trò", "Trạng thái", "Thao tác"};
+        tableModel = new DefaultTableModel(columns, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return column == ACTION_COLUMN;
+            }
+        };
+        accountTable = new JTable(tableModel);
+        accountTable.setRowHeight(32);
+        accountTable.getColumnModel().getColumn(ACTION_COLUMN).setCellRenderer(new ActionCellRenderer());
+        accountTable.getColumnModel().getColumn(ACTION_COLUMN).setCellEditor(new ActionCellEditor());
+        accountTable.getColumnModel().getColumn(ACTION_COLUMN).setPreferredWidth(220);
+        accountTable.getColumnModel().getColumn(ACTION_COLUMN).setMaxWidth(220);
+        return new JScrollPane(accountTable);
     }
 
     private void reloadData() {
@@ -89,7 +86,8 @@ public class AccountManagementPanel extends JPanel {
                         tk.getMaTK(),
                         tk.getTenDangNhap(),
                         tk.getVaiTro(),
-                        "HoatDong".equals(tk.getTrangThai()) ? "Hoạt động" : "Đã khóa"
+                        "HoatDong".equals(tk.getTrangThai()) ? "Hoạt động" : "Đã khóa",
+                        null
                 });
             }
         } catch (SQLException e) {
@@ -98,20 +96,7 @@ public class AccountManagementPanel extends JPanel {
         }
     }
 
-    private TaiKhoan getSelectedAccount() {
-        int row = accountTable.getSelectedRow();
-        if (row < 0 || currentRows == null || row >= currentRows.size()) {
-            JOptionPane.showMessageDialog(this, "Vui lòng chọn một tài khoản trong bảng.");
-            return null;
-        }
-        return currentRows.get(row);
-    }
-
-    private void toggleLockSelected() {
-        TaiKhoan tk = getSelectedAccount();
-        if (tk == null) {
-            return;
-        }
+    private void toggleLock(TaiKhoan tk) {
         if (isSelf(tk)) {
             JOptionPane.showMessageDialog(this, "Không thể tự khóa chính tài khoản đang đăng nhập.");
             return;
@@ -126,11 +111,7 @@ public class AccountManagementPanel extends JPanel {
         }
     }
 
-    private void changeRoleSelected() {
-        TaiKhoan tk = getSelectedAccount();
-        if (tk == null) {
-            return;
-        }
+    private void changeRole(TaiKhoan tk) {
         if (isSelf(tk)) {
             JOptionPane.showMessageDialog(this, "Không thể tự đổi vai trò của chính tài khoản đang đăng nhập.");
             return;
@@ -217,5 +198,58 @@ public class AccountManagementPanel extends JPanel {
 
     public JPanel getRootPanel() {
         return this;
+    }
+
+    /** Renderer: hien 2 nut Khoa/Mo khoa va Doi vai tro o cot "Thao tac" cho moi hang. */
+    private static class ActionCellRenderer extends JPanel implements TableCellRenderer {
+        ActionCellRenderer() {
+            super(new FlowLayout(FlowLayout.CENTER, 4, 2));
+            add(new JButton("Khóa / Mở khóa"));
+            add(new JButton("Đổi vai trò"));
+        }
+
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
+                                                         boolean hasFocus, int row, int column) {
+            return this;
+        }
+    }
+
+    /** Editor: bam that vao nut o cot "Thao tac" de thao tac tren dung hang do. */
+    private class ActionCellEditor extends AbstractCellEditor implements TableCellEditor {
+        private final JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 4, 2));
+        private int editingRow = -1;
+
+        ActionCellEditor() {
+            JButton toggleLockButton = new JButton("Khóa / Mở khóa");
+            JButton changeRoleButton = new JButton("Đổi vai trò");
+            toggleLockButton.addActionListener(e -> {
+                int row = editingRow;
+                fireEditingStopped();
+                if (row >= 0 && currentRows != null && row < currentRows.size()) {
+                    toggleLock(currentRows.get(row));
+                }
+            });
+            changeRoleButton.addActionListener(e -> {
+                int row = editingRow;
+                fireEditingStopped();
+                if (row >= 0 && currentRows != null && row < currentRows.size()) {
+                    changeRole(currentRows.get(row));
+                }
+            });
+            panel.add(toggleLockButton);
+            panel.add(changeRoleButton);
+        }
+
+        @Override
+        public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
+            editingRow = row;
+            return panel;
+        }
+
+        @Override
+        public Object getCellEditorValue() {
+            return null;
+        }
     }
 }

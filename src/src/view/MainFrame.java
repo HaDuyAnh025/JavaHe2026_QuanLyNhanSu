@@ -32,9 +32,6 @@ public class MainFrame extends JFrame {
     private JPanel pnlSidebar;
     private JButton logoButton;
     private JButton avatarButton;
-    private JButton trợGiúpButton;
-    private JButton thôngBáoButton;
-    private JTextField tìmKiếmNhanhTextField;
 
     private JButton tổngQuanButton;          // Dashboard
     private JButton btnQuanLyNhanVien;       // "Quan ly" (danh sach + tim kiem nhanh + loc nang cao gop chung)
@@ -83,16 +80,14 @@ public class MainFrame extends JFrame {
 
     /**
      * Phan quyen theo vai tro:
-     *  - Admin: Dashboard, Quan ly (them/sua/xoa), Phan quyen, Danh muc. KHONG co Thong bao/Tro giup.
-     *  - NhanVien (nhan vien phong nhan su): Dashboard, Quan ly (them/sua/xoa). Co Thong bao/Tro giup.
+     *  - Admin: Dashboard, Quan ly (them/sua/xoa), Phan quyen, Danh muc.
+     *  - NhanVien (nhan vien phong nhan su): Dashboard, Quan ly (them/sua/xoa).
      *    KHONG thay Phan quyen, Danh muc.
      */
     private void applyRolePermissions() {
         boolean isAdmin = currentAccount != null && currentAccount.isAdmin();
         phânQuyềnButton.setVisible(isAdmin);
         càiĐặtButton.setVisible(isAdmin);
-        thôngBáoButton.setVisible(!isAdmin);
-        trợGiúpButton.setVisible(!isAdmin);
         avatarButton.setText(currentAccount == null ? "..." : currentAccount.getTenDangNhap());
     }
 
@@ -134,7 +129,6 @@ public class MainFrame extends JFrame {
 
         btnQuanLyNhanVien.addActionListener(e -> {
             // Bam thang vao "Quan ly" tu sidebar -> ve trang thai danh sach binh thuong
-            tìmKiếmNhanhTextField.setText("");
             listEmployeesPanel.exitSearchMode();
             showCard(CARD_LIST_EMPLOYEES, btnQuanLyNhanVien);
         });
@@ -154,36 +148,15 @@ public class MainFrame extends JFrame {
         });
     }
 
-    /**
-     * Gan su kien cho thanh ngang tren (search nhanh, thong bao, tro giup, avatar).
-     * "Tim kiem nhanh" gio tim NGAY trong trang "Quan ly" (khong con trang Tim kiem rieng):
-     *  - Co tu khoa  -> chuyen sang card Quan ly, hien "Ket qua tim kiem" (nhu anh 5)
-     *  - Xoa tu khoa -> ve lai trang thai danh sach binh thuong (nhu anh 4)
-     */
+    /** Gan su kien cho thanh ngang tren (avatar). */
     private void setupTopBar() {
         logoButton.addActionListener(e -> showCard(CARD_DASHBOARD, tổngQuanButton));
 
-        tìmKiếmNhanhTextField.addActionListener(e -> performQuickSearch());
-
-        thôngBáoButton.addActionListener(e ->
-                JOptionPane.showMessageDialog(this, "Chua co thong bao moi."));
-        trợGiúpButton.addActionListener(e ->
-                JOptionPane.showMessageDialog(this, "Lien he quan tri vien de duoc ho tro."));
         avatarButton.addActionListener(e -> {
             String info = currentAccount == null ? "Chưa đăng nhập"
                     : "Tài khoản: " + currentAccount.getTenDangNhap() + "\nVai trò: " + currentAccount.getVaiTro();
             JOptionPane.showMessageDialog(this, info, "Thông tin tài khoản", JOptionPane.INFORMATION_MESSAGE);
         });
-    }
-
-    private void performQuickSearch() {
-        String keyword = tìmKiếmNhanhTextField.getText().trim();
-        showCard(CARD_LIST_EMPLOYEES, btnQuanLyNhanVien);
-        if (keyword.isEmpty()) {
-            listEmployeesPanel.exitSearchMode();
-        } else {
-            listEmployeesPanel.searchByKeyword(keyword);
-        }
     }
 
     /** Chuyen sang card chi dinh va cap nhat trang thai highlight cua sidebar. */

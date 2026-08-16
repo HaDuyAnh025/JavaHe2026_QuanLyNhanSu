@@ -77,9 +77,26 @@ public class AddEmployeesPanel extends JPanel {
     private Runnable onSavedOrCancelled;
 
     public AddEmployeesPanel() {
-        mãNhânViênTextField.setEditable(false); // MaNV la AUTO_INCREMENT, khong cho sua tay
+        mãNhânViênTextField.setEditable(false); // MaNV do he thong tu sinh (MaPhongBan + so thu tu), khong cho sua tay
         setupActions();
+        setupGenderRadios();
         resetToAddMode();
+    }
+
+    /**
+     * Dam bao "Gioi tinh" chi chon duoc 1 trong 3 (Nam/Nu/Khac): tu bo chon 2 nut
+     * con lai moi khi bam 1 nut, khong phu thuoc hoan toan vao ButtonGroup cua .form.
+     */
+    private void setupGenderRadios() {
+        namRadioButton.addActionListener(e -> selectSingleGenderRadio(namRadioButton));
+        nữRadioButton.addActionListener(e -> selectSingleGenderRadio(nữRadioButton));
+        khácRadioButton.addActionListener(e -> selectSingleGenderRadio(khácRadioButton));
+    }
+
+    private void selectSingleGenderRadio(JRadioButton chosen) {
+        namRadioButton.setSelected(chosen == namRadioButton);
+        nữRadioButton.setSelected(chosen == nữRadioButton);
+        khácRadioButton.setSelected(chosen == khácRadioButton);
     }
 
     private void populateCombos() {
@@ -272,7 +289,7 @@ public class AddEmployeesPanel extends JPanel {
         NhanVien nv = buildEmployeeFromForm();
         try {
             if (editingEmployee == null) {
-                int newId = nhanVienDAO.insert(nv);
+                String newId = nhanVienDAO.insert(nv);
                 JOptionPane.showMessageDialog(this, "Đã thêm nhân viên mới (Mã NV: " + newId + ").");
             } else {
                 nv.setMaNV(editingEmployee.getMaNV());
@@ -329,7 +346,7 @@ public class AddEmployeesPanel extends JPanel {
         this.editingEmployee = nv;
         lblFormTitle.setText("Sửa thông tin nhân viên");
         lưuHồSơButton.setText("Cập nhật hồ sơ");
-        mãNhânViênTextField.setText(String.valueOf(nv.getMaNV()));
+        mãNhânViênTextField.setText(nv.getMaNV());
 
         họVàTênTextField.setText(nv.getHoTen() == null ? "" : nv.getHoTen());
         ngàySinhTextField.setText(DateUtil.format(nv.getNgaySinh()));
@@ -361,7 +378,7 @@ public class AddEmployeesPanel extends JPanel {
     private void clearForm() {
         họVàTênTextField.setText("");
         ngàySinhTextField.setText("");
-        namRadioButton.setSelected(true);
+        selectSingleGenderRadio(namRadioButton);
         sốCCCDTextField.setText("");
         sốĐiệnThoạiTextField.setText("");
         emailTextField.setText("");
@@ -383,19 +400,19 @@ public class AddEmployeesPanel extends JPanel {
 
     private void selectGender(String gioiTinh) {
         if ("Nam".equals(gioiTinh)) {
-            namRadioButton.setSelected(true);
+            selectSingleGenderRadio(namRadioButton);
         } else if ("Nữ".equals(gioiTinh)) {
-            nữRadioButton.setSelected(true);
+            selectSingleGenderRadio(nữRadioButton);
         } else {
-            khácRadioButton.setSelected(true);
+            selectSingleGenderRadio(khácRadioButton);
         }
     }
 
-    private void selectPhongBanById(Integer maPB) {
+    private void selectPhongBanById(String maPB) {
         if (maPB != null) {
             for (int i = 0; i < phòngBanComboBox.getItemCount(); i++) {
                 Object item = phòngBanComboBox.getItemAt(i);
-                if (item instanceof PhongBan && ((PhongBan) item).getMaPB() == maPB) {
+                if (item instanceof PhongBan && maPB.equals(((PhongBan) item).getMaPB())) {
                     phòngBanComboBox.setSelectedIndex(i);
                     return;
                 }
@@ -404,11 +421,11 @@ public class AddEmployeesPanel extends JPanel {
         phòngBanComboBox.setSelectedIndex(0);
     }
 
-    private void selectChucVuById(Integer maCV) {
+    private void selectChucVuById(String maCV) {
         if (maCV != null) {
             for (int i = 0; i < chứcVụComboBox.getItemCount(); i++) {
                 Object item = chứcVụComboBox.getItemAt(i);
-                if (item instanceof ChucVu && ((ChucVu) item).getMaCV() == maCV) {
+                if (item instanceof ChucVu && maCV.equals(((ChucVu) item).getMaCV())) {
                     chứcVụComboBox.setSelectedIndex(i);
                     return;
                 }

@@ -6,7 +6,7 @@ package model;
  * 1 UI duy nhat, khong phai viet trung 2 lan.
  */
 public interface DanhMuc {
-    int getId();
+    String getId();
 
     String getTen();
 

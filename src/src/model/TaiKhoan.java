@@ -8,7 +8,7 @@ public class TaiKhoan {
     private String matKhauHash;
     private String vaiTro; // "Admin" | "NhanVien"
 
-    private Integer maNV;
+    private String maNV;
     private String hoTenNhanVien; // do JOIN nap vao, chi de hien thi
     private String trangThai;     // "HoatDong" | "KhoaTaiKhoan"
 
@@ -47,11 +47,11 @@ public class TaiKhoan {
         this.vaiTro = vaiTro;
     }
 
-    public Integer getMaNV() {
+    public String getMaNV() {
         return maNV;
     }
 
-    public void setMaNV(Integer maNV) {
+    public void setMaNV(String maNV) {
         this.maNV = maNV;
     }
 

@@ -1,24 +1,24 @@
 package model;
 
 public class ChucVu implements DanhMuc {
-    private int maCV;
+    private String maCV;
     private String tenChucVu;
     private String moTa;
 
     public ChucVu() {
     }
 
-    public ChucVu(int maCV, String tenChucVu, String moTa) {
+    public ChucVu(String maCV, String tenChucVu, String moTa) {
         this.maCV = maCV;
         this.tenChucVu = tenChucVu;
         this.moTa = moTa;
     }
 
-    public int getMaCV() {
+    public String getMaCV() {
         return maCV;
     }
 
-    public void setMaCV(int maCV) {
+    public void setMaCV(String maCV) {
         this.maCV = maCV;
     }
 
@@ -39,7 +39,7 @@ public class ChucVu implements DanhMuc {
     }
 
     @Override
-    public int getId() {
+    public String getId() {
         return maCV;
     }
 

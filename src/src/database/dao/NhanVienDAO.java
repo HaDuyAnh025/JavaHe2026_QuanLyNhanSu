@@ -7,7 +7,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,21 +20,46 @@ public class NhanVienDAO {
                     "LEFT JOIN PHONGBAN pb ON nv.MaPB = pb.MaPB " +
                     "LEFT JOIN CHUCVU cv ON nv.MaCV = cv.MaCV ";
 
-    public int insert(NhanVien nv) throws SQLException {
-        String sql = "INSERT INTO NHANVIEN (HoTen, NgaySinh, GioiTinh, SoCCCD, SoDienThoai, Email, DiaChi, " +
+    /**
+     * Them nhan vien moi. MaNV duoc TU SINH theo cu phap MaPhongBan + so thu tu
+     * 3 chu so, dem RIENG cho tung phong ban (vd: IT001, IT002...; KD001...).
+     * Neu chua chon phong ban thi dung tien to "NV". Tra ve MaNV vua sinh.
+     */
+    public String insert(NhanVien nv) throws SQLException {
+        String maNV = generateNextMaNV(nv.getMaPB());
+        nv.setMaNV(maNV);
+        String sql = "INSERT INTO NHANVIEN (MaNV, HoTen, NgaySinh, GioiTinh, SoCCCD, SoDienThoai, Email, DiaChi, " +
                 "AvatarPath, MaPB, MaCV, NgayVaoLam, LoaiHopDong, MucLuongCoBan, TrangThai) " +
-                "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+                "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
         try (Connection conn = DBConnection.getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            bindEmployeeFields(ps, nv);
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, maNV);
+            bindEmployeeFields(ps, nv, 2);
             ps.executeUpdate();
-            try (ResultSet keys = ps.getGeneratedKeys()) {
-                if (keys.next()) {
-                    return keys.getInt(1);
+        }
+        return maNV;
+    }
+
+    /** Mo phong so thu tu tiep theo trong pham vi 1 phong ban (khong bao gio trung nhau du co xoa giua chung). */
+    private String generateNextMaNV(String maPB) throws SQLException {
+        String prefix = (maPB == null || maPB.trim().isEmpty()) ? "NV" : maPB.trim();
+        String sql = "SELECT MaNV FROM NHANVIEN WHERE MaNV LIKE ?";
+        int max = 0;
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, prefix + "%");
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    String suffix = rs.getString(1).substring(prefix.length());
+                    try {
+                        max = Math.max(max, Integer.parseInt(suffix));
+                    } catch (NumberFormatException ignored) {
+                        // MaNV khac dinh dang mong doi (khong the xay ra voi du lieu do app tu sinh), bo qua
+                    }
                 }
             }
         }
-        throw new SQLException("Khong lay duoc MaNV vua tao.");
+        return prefix + String.format("%03d", max + 1);
     }
 
     public void update(NhanVien nv) throws SQLException {
@@ -44,26 +68,26 @@ public class NhanVienDAO {
                 "WHERE MaNV=?";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            int lastIndex = bindEmployeeFields(ps, nv);
-            ps.setInt(lastIndex, nv.getMaNV());
+            int lastIndex = bindEmployeeFields(ps, nv, 1);
+            ps.setString(lastIndex, nv.getMaNV());
             ps.executeUpdate();
         }
     }
 
-    public void delete(int maNV) throws SQLException {
+    public void delete(String maNV) throws SQLException {
         String sql = "DELETE FROM NHANVIEN WHERE MaNV=?";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, maNV);
+            ps.setString(1, maNV);
             ps.executeUpdate();
         }
     }
 
-    public NhanVien findById(int maNV) throws SQLException {
+    public NhanVien findById(String maNV) throws SQLException {
         String sql = SELECT_BASE + "WHERE nv.MaNV = ?";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, maNV);
+            ps.setString(1, maNV);
             try (ResultSet rs = ps.executeQuery()) {
                 return rs.next() ? mapRow(rs) : null;
             }
@@ -118,7 +142,7 @@ public class NhanVienDAO {
 
     public List<NhanVien> search(String keyword, int page, int pageSize) throws SQLException {
         String sql = SELECT_BASE +
-                "WHERE nv.HoTen LIKE ? OR nv.SoDienThoai LIKE ? OR nv.Email LIKE ? OR CAST(nv.MaNV AS CHAR) LIKE ? " +
+                "WHERE nv.HoTen LIKE ? OR nv.SoDienThoai LIKE ? OR nv.Email LIKE ? OR nv.MaNV LIKE ? " +
                 "ORDER BY nv.MaNV LIMIT ? OFFSET ?";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -135,7 +159,7 @@ public class NhanVienDAO {
 
     public int countSearch(String keyword) throws SQLException {
         String sql = "SELECT COUNT(*) FROM NHANVIEN nv " +
-                "WHERE nv.HoTen LIKE ? OR nv.SoDienThoai LIKE ? OR nv.Email LIKE ? OR CAST(nv.MaNV AS CHAR) LIKE ?";
+                "WHERE nv.HoTen LIKE ? OR nv.SoDienThoai LIKE ? OR nv.Email LIKE ? OR nv.MaNV LIKE ?";
         try (Connection conn = DBConnection.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             String like = "%" + keyword + "%";
@@ -149,7 +173,7 @@ public class NhanVienDAO {
         }
     }
 
-    public List<NhanVien> advancedSearch(Integer maPB, Integer maCV, String trangThai, String gioiTinh,
+    public List<NhanVien> advancedSearch(String maPB, String maCV, String trangThai, String gioiTinh,
                                           String keyword, int page, int pageSize) throws SQLException {
         StringBuilder sql = new StringBuilder(SELECT_BASE);
         List<Object> params = new ArrayList<>();
@@ -165,7 +189,7 @@ public class NhanVienDAO {
         }
     }
 
-    public int countAdvancedSearch(Integer maPB, Integer maCV, String trangThai, String gioiTinh,
+    public int countAdvancedSearch(String maPB, String maCV, String trangThai, String gioiTinh,
                                     String keyword) throws SQLException {
         StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM NHANVIEN nv ");
         List<Object> params = new ArrayList<>();
@@ -180,7 +204,7 @@ public class NhanVienDAO {
         }
     }
 
-    private void appendAdvancedFilters(StringBuilder sql, List<Object> params, Integer maPB, Integer maCV,
+    private void appendAdvancedFilters(StringBuilder sql, List<Object> params, String maPB, String maCV,
                                         String trangThai, String gioiTinh, String keyword) {
         List<String> conditions = new ArrayList<>();
         if (maPB != null) {
@@ -227,9 +251,9 @@ public class NhanVienDAO {
         return result;
     }
 
-    /** Gan cac field cua nv vao PreparedStatement theo dung thu tu cot trong INSERT/UPDATE, tra ve index tiep theo. */
-    private int bindEmployeeFields(PreparedStatement ps, NhanVien nv) throws SQLException {
-        int i = 1;
+    /** Gan cac field cua nv vao PreparedStatement (KHONG gom MaNV) bat dau tu startIndex, tra ve index tiep theo. */
+    private int bindEmployeeFields(PreparedStatement ps, NhanVien nv, int startIndex) throws SQLException {
+        int i = startIndex;
         ps.setString(i++, nv.getHoTen());
         ps.setDate(i++, util.DateUtil.toSqlDate(nv.getNgaySinh()));
         ps.setString(i++, nv.getGioiTinh());
@@ -238,8 +262,8 @@ public class NhanVienDAO {
         ps.setString(i++, nv.getEmail());
         ps.setString(i++, nv.getDiaChi());
         ps.setString(i++, nv.getAvatarPath());
-        setNullableInt(ps, i++, nv.getMaPB());
-        setNullableInt(ps, i++, nv.getMaCV());
+        ps.setString(i++, nv.getMaPB());
+        ps.setString(i++, nv.getMaCV());
         ps.setDate(i++, util.DateUtil.toSqlDate(nv.getNgayVaoLam()));
         ps.setString(i++, nv.getLoaiHopDong());
         ps.setBigDecimal(i++, nv.getMucLuongCoBan());
@@ -247,17 +271,9 @@ public class NhanVienDAO {
         return i;
     }
 
-    private void setNullableInt(PreparedStatement ps, int index, Integer value) throws SQLException {
-        if (value == null) {
-            ps.setNull(index, java.sql.Types.INTEGER);
-        } else {
-            ps.setInt(index, value);
-        }
-    }
-
     private NhanVien mapRow(ResultSet rs) throws SQLException {
         NhanVien nv = new NhanVien();
-        nv.setMaNV(rs.getInt("MaNV"));
+        nv.setMaNV(rs.getString("MaNV"));
         nv.setHoTen(rs.getString("HoTen"));
         nv.setNgaySinh(util.DateUtil.fromSqlDate(rs.getDate("NgaySinh")));
         nv.setGioiTinh(rs.getString("GioiTinh"));
@@ -266,11 +282,9 @@ public class NhanVienDAO {
         nv.setEmail(rs.getString("Email"));
         nv.setDiaChi(rs.getString("DiaChi"));
         nv.setAvatarPath(rs.getString("AvatarPath"));
-        int maPB = rs.getInt("MaPB");
-        nv.setMaPB(rs.wasNull() ? null : maPB);
+        nv.setMaPB(rs.getString("MaPB"));
         nv.setTenPhongBan(rs.getString("TenPhongBan"));
-        int maCV = rs.getInt("MaCV");
-        nv.setMaCV(rs.wasNull() ? null : maCV);
+        nv.setMaCV(rs.getString("MaCV"));
         nv.setTenChucVu(rs.getString("TenChucVu"));
         nv.setNgayVaoLam(util.DateUtil.fromSqlDate(rs.getDate("NgayVaoLam")));
         nv.setLoaiHopDong(rs.getString("LoaiHopDong"));

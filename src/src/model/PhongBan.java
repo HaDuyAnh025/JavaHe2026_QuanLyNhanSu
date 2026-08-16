@@ -1,24 +1,24 @@
 package model;
 
 public class PhongBan implements DanhMuc {
-    private int maPB;
+    private String maPB;
     private String tenPhongBan;
     private String moTa;
 
     public PhongBan() {
     }
 
-    public PhongBan(int maPB, String tenPhongBan, String moTa) {
+    public PhongBan(String maPB, String tenPhongBan, String moTa) {
         this.maPB = maPB;
         this.tenPhongBan = tenPhongBan;
         this.moTa = moTa;
     }
 
-    public int getMaPB() {
+    public String getMaPB() {
         return maPB;
     }
 
-    public void setMaPB(int maPB) {
+    public void setMaPB(String maPB) {
         this.maPB = maPB;
     }
 
@@ -39,7 +39,7 @@ public class PhongBan implements DanhMuc {
     }
 
     @Override
-    public int getId() {
+    public String getId() {
         return maPB;
     }
 

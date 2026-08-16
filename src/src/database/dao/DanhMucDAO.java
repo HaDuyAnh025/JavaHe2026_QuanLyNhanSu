@@ -10,12 +10,12 @@ public interface DanhMucDAO {
 
     List<? extends DanhMuc> findAll() throws SQLException;
 
-    int insert(String ten, String moTa) throws SQLException;
+    void insert(String ma, String ten, String moTa) throws SQLException;
 
-    void update(int id, String ten, String moTa) throws SQLException;
+    void update(String id, String ten, String moTa) throws SQLException;
 
-    void delete(int id) throws SQLException;
+    void delete(String id) throws SQLException;
 
     /** So nhan vien dang thuoc danh muc nay (de canh bao truoc khi xoa). */
-    int countUsage(int id) throws SQLException;
+    int countUsage(String id) throws SQLException;
 }

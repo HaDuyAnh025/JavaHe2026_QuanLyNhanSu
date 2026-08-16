@@ -11,6 +11,10 @@ import util.TableModelUtil;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableCellRenderer;
+import java.awt.Component;
+import java.awt.FlowLayout;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.sql.SQLException;
@@ -24,7 +28,7 @@ import java.util.function.Consumer;
  *
  * Man hinh nay co 2 trang thai hien thi tieu de/noi dung bang, chuyen doi
  * bang code (viec tim kiem nhanh duoc thuc hien tu o "Tim kiem nhanh" o
- * TOP BAR cua MainFrame):
+ * ngay dau trang nay):
  *
  *  - BROWSE (mac dinh): tieu de "Danh sach nhan vien" + phu de, chan trang
  *    hien "Hien thi X-Y cua Z nhan vien".
@@ -41,6 +45,8 @@ public class ListEmployeesPanel extends JPanel {
     private JLabel lblPageTitle;
     private JLabel lblSubtitle;
     private JButton thêmNhânViênButton;
+    private JTextField tìmKiếmNhanhTextField;
+    private JButton tìmKiếmButton;
     private JButton lọcButton;
     private JButton xuấtButton;
 
@@ -57,8 +63,6 @@ public class ListEmployeesPanel extends JPanel {
     private JButton xóaLọcButton;
 
     private JTable employeeTable;
-    private JButton sửaButton;
-    private JButton xóaButton;
 
     private JLabel lblResultCount;
     private JButton trangTrướcButton;
@@ -69,6 +73,7 @@ public class ListEmployeesPanel extends JPanel {
     private static final String TITLE_BROWSE = "Danh sách nhân viên";
     private static final String TITLE_SEARCH = "Kết quả tìm kiếm";
     private static final int PAGE_SIZE = 10;
+    private static final int ACTION_COLUMN = 5;
 
     private static final int MODE_BROWSE = 0;
     private static final int MODE_KEYWORD_SEARCH = 1;
@@ -96,19 +101,26 @@ public class ListEmployeesPanel extends JPanel {
     }
 
     private void setupTable() {
-        String[] columns = {"Ma NV", "Ho va ten", "Phong ban", "Chuc vu", "Lien he", "Trang thai"};
+        String[] columns = {"Ma NV", "Ho va ten", "Phong ban", "Chuc vu", "Lien he", "Thao tac"};
         tableModel = new DefaultTableModel(columns, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return false;
+                return column == ACTION_COLUMN;
             }
         };
         employeeTable.setModel(tableModel);
+        employeeTable.getColumnModel().getColumn(ACTION_COLUMN).setCellRenderer(new ActionCellRenderer());
+        employeeTable.getColumnModel().getColumn(ACTION_COLUMN).setCellEditor(new ActionCellEditor());
+        employeeTable.getColumnModel().getColumn(ACTION_COLUMN).setPreferredWidth(140);
+        employeeTable.getColumnModel().getColumn(ACTION_COLUMN).setMaxWidth(140);
         employeeTable.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (e.getClickCount() == 2) {
-                    handleEditSelected();
+                    int row = employeeTable.rowAtPoint(e.getPoint());
+                    if (row >= 0 && row < currentRows.size()) {
+                        handleEdit(currentRows.get(row));
+                    }
                 }
             }
         });
@@ -121,8 +133,8 @@ public class ListEmployeesPanel extends JPanel {
             }
         });
 
-        sửaButton.addActionListener(e -> handleEditSelected());
-        xóaButton.addActionListener(e -> handleDeleteSelected());
+        tìmKiếmNhanhTextField.addActionListener(e -> performQuickSearch());
+        tìmKiếmButton.addActionListener(e -> performQuickSearch());
 
         // Bam "Loc" chi de AN/HIEN bang loc ben trai, khong doi trang thai tim kiem
         lọcButton.addActionListener(e -> toggleFilterPanel());
@@ -133,6 +145,27 @@ public class ListEmployeesPanel extends JPanel {
 
         trangTrướcButton.addActionListener(e -> goToPreviousPage());
         trangSauButton.addActionListener(e -> goToNextPage());
+
+        setupGenderFilterRadios();
+    }
+
+    /**
+     * Dam bao bo loc "Gioi tinh" chi chon duoc 1 trong 4 (Tat ca/Nam/Nu/Khac): tu
+     * bo chon cac nut con lai moi khi bam 1 nut, khong phu thuoc hoan toan vao
+     * ButtonGroup cua .form.
+     */
+    private void setupGenderFilterRadios() {
+        tấtCảRadioButton.addActionListener(e -> selectSingleGenderFilterRadio(tấtCảRadioButton));
+        namRadioButton.addActionListener(e -> selectSingleGenderFilterRadio(namRadioButton));
+        nữRadioButton.addActionListener(e -> selectSingleGenderFilterRadio(nữRadioButton));
+        khácRadioButton.addActionListener(e -> selectSingleGenderFilterRadio(khácRadioButton));
+    }
+
+    private void selectSingleGenderFilterRadio(JRadioButton chosen) {
+        tấtCảRadioButton.setSelected(chosen == tấtCảRadioButton);
+        namRadioButton.setSelected(chosen == namRadioButton);
+        nữRadioButton.setSelected(chosen == nữRadioButton);
+        khácRadioButton.setSelected(chosen == khácRadioButton);
     }
 
     private void populateFilterCombos() {
@@ -162,11 +195,8 @@ public class ListEmployeesPanel extends JPanel {
         rootPanel.repaint();
     }
 
-    /**
-     * Duoc MainFrame goi khi nguoi dung go va Enter o o "Tim kiem nhanh" tren top bar.
-     * Chuyen man hinh sang trang thai "Ket qua tim kiem".
-     */
-    public void searchByKeyword(String keyword) {
+    /** Chuyen man hinh sang trang thai "Ket qua tim kiem" voi tu khoa cho truoc. */
+    private void searchByKeyword(String keyword) {
         this.currentKeyword = keyword;
         this.viewMode = MODE_KEYWORD_SEARCH;
         this.currentPage = 1;
@@ -179,9 +209,20 @@ public class ListEmployeesPanel extends JPanel {
         this.currentKeyword = "";
         this.viewMode = MODE_BROWSE;
         this.currentPage = 1;
+        tìmKiếmNhanhTextField.setText("");
         applyBrowseModeUI();
         populateFilterCombos(); // dong bo lai neu Phong ban/Chuc vu vua duoc sua o man Danh muc
         refreshCurrentView();
+    }
+
+    /** Tim kiem nhanh theo tu khoa go trong o o dau trang - co tu khoa thi hien "Ket qua tim kiem", rong thi ve danh sach thuong. */
+    private void performQuickSearch() {
+        String keyword = tìmKiếmNhanhTextField.getText().trim();
+        if (keyword.isEmpty()) {
+            exitSearchMode();
+        } else {
+            searchByKeyword(keyword);
+        }
     }
 
     /** Duoc MainFrame goi sau khi them/sua thanh cong de ve lai danh sach binh thuong. */
@@ -260,16 +301,16 @@ public class ListEmployeesPanel extends JPanel {
         if (trạngTháiComboBox.getItemCount() > 0) {
             trạngTháiComboBox.setSelectedIndex(0);
         }
-        tấtCảRadioButton.setSelected(true);
+        selectSingleGenderFilterRadio(tấtCảRadioButton);
         exitSearchMode();
     }
 
     private void loadFilterResults() {
         Object pbSel = phòngBanComboBox.getSelectedItem();
-        Integer maPB = pbSel instanceof PhongBan ? ((PhongBan) pbSel).getMaPB() : null;
+        String maPB = pbSel instanceof PhongBan ? ((PhongBan) pbSel).getMaPB() : null;
 
         Object cvSel = chứcVụComboBox.getSelectedItem();
-        Integer maCV = cvSel instanceof ChucVu ? ((ChucVu) cvSel).getMaCV() : null;
+        String maCV = cvSel instanceof ChucVu ? ((ChucVu) cvSel).getMaCV() : null;
 
         String trangThai = trangThaiDisplayToCode((String) trạngTháiComboBox.getSelectedItem());
         String gioiTinh = namRadioButton.isSelected() ? "Nam"
@@ -333,21 +374,13 @@ public class ListEmployeesPanel extends JPanel {
         }
     }
 
-    private void handleEditSelected() {
-        NhanVien nv = getSelectedEmployee();
-        if (nv == null) {
-            return;
-        }
+    private void handleEdit(NhanVien nv) {
         if (onEditEmployeeRequested != null) {
             onEditEmployeeRequested.accept(nv);
         }
     }
 
-    private void handleDeleteSelected() {
-        NhanVien nv = getSelectedEmployee();
-        if (nv == null) {
-            return;
-        }
+    private void handleDelete(NhanVien nv) {
         int confirm = JOptionPane.showConfirmDialog(this,
                 "Bạn có chắc muốn xóa nhân viên \"" + nv.getHoTen() + "\"?",
                 "Xóa nhân viên", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
@@ -361,15 +394,6 @@ public class ListEmployeesPanel extends JPanel {
         } catch (SQLException e) {
             showDbError(e);
         }
-    }
-
-    private NhanVien getSelectedEmployee() {
-        int row = employeeTable.getSelectedRow();
-        if (row < 0 || row >= currentRows.size()) {
-            JOptionPane.showMessageDialog(this, "Vui lòng chọn một nhân viên trong bảng.");
-            return null;
-        }
-        return currentRows.get(row);
     }
 
     private void showDbError(SQLException e) {
@@ -387,5 +411,58 @@ public class ListEmployeesPanel extends JPanel {
 
     public JPanel getRootPanel() {
         return rootPanel;
+    }
+
+    /** Renderer: hien 2 nut Sua/Xoa o cot "Thao tac" cho moi hang. */
+    private static class ActionCellRenderer extends JPanel implements TableCellRenderer {
+        ActionCellRenderer() {
+            super(new FlowLayout(FlowLayout.CENTER, 4, 2));
+            add(new JButton("Sửa"));
+            add(new JButton("Xóa"));
+        }
+
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
+                                                         boolean hasFocus, int row, int column) {
+            return this;
+        }
+    }
+
+    /** Editor: bam that vao nut Sua/Xoa o cot "Thao tac" de thao tac tren dung hang do. */
+    private class ActionCellEditor extends AbstractCellEditor implements TableCellEditor {
+        private final JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 4, 2));
+        private int editingRow = -1;
+
+        ActionCellEditor() {
+            JButton editButton = new JButton("Sửa");
+            JButton deleteButton = new JButton("Xóa");
+            editButton.addActionListener(e -> {
+                int row = editingRow;
+                fireEditingStopped();
+                if (row >= 0 && row < currentRows.size()) {
+                    handleEdit(currentRows.get(row));
+                }
+            });
+            deleteButton.addActionListener(e -> {
+                int row = editingRow;
+                fireEditingStopped();
+                if (row >= 0 && row < currentRows.size()) {
+                    handleDelete(currentRows.get(row));
+                }
+            });
+            panel.add(editButton);
+            panel.add(deleteButton);
+        }
+
+        @Override
+        public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
+            editingRow = row;
+            return panel;
+        }
+
+        @Override
+        public Object getCellEditorValue() {
+            return null;
+        }
     }
 }

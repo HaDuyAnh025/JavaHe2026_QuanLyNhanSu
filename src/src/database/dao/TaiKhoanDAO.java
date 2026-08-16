@@ -114,8 +114,7 @@ public class TaiKhoanDAO {
         tk.setTenDangNhap(rs.getString("TenDangNhap"));
         tk.setMatKhauHash(rs.getString("MatKhauHash"));
         tk.setVaiTro(rs.getString("VaiTro"));
-        int maNV = rs.getInt("MaNV");
-        tk.setMaNV(rs.wasNull() ? null : maNV);
+        tk.setMaNV(rs.getString("MaNV"));
         tk.setHoTenNhanVien(rs.getString("HoTen"));
         tk.setTrangThai(rs.getString("TrangThai"));
         Timestamp ngayTao = rs.getTimestamp("NgayTao");

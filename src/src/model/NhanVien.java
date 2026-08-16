@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 public class NhanVien {
-    private int maNV;
+    private String maNV;
     private String hoTen;
     private LocalDate ngaySinh;
     private String gioiTinh; // "Nam" | "Nữ" | "Khác"
@@ -14,9 +14,9 @@ public class NhanVien {
     private String diaChi;
     private String avatarPath;
 
-    private Integer maPB;
+    private String maPB;
     private String tenPhongBan; // do JOIN nap vao, chi de hien thi
-    private Integer maCV;
+    private String maCV;
     private String tenChucVu;   // do JOIN nap vao, chi de hien thi
 
     private LocalDate ngayVaoLam;
@@ -25,11 +25,11 @@ public class NhanVien {
 
     private String trangThai; // "DangLamViec" | "NghiViec" | "TamNghi"
 
-    public int getMaNV() {
+    public String getMaNV() {
         return maNV;
     }
 
-    public void setMaNV(int maNV) {
+    public void setMaNV(String maNV) {
         this.maNV = maNV;
     }
 
@@ -97,11 +97,11 @@ public class NhanVien {
         this.avatarPath = avatarPath;
     }
 
-    public Integer getMaPB() {
+    public String getMaPB() {
         return maPB;
     }
 
-    public void setMaPB(Integer maPB) {
+    public void setMaPB(String maPB) {
         this.maPB = maPB;
     }
 
@@ -113,11 +113,11 @@ public class NhanVien {
         this.tenPhongBan = tenPhongBan;
     }
 
-    public Integer getMaCV() {
+    public String getMaCV() {
         return maCV;
     }
 
-    public void setMaCV(Integer maCV) {
+    public void setMaCV(String maCV) {
         this.maCV = maCV;
     }
 
