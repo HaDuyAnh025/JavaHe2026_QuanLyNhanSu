@@ -6,6 +6,8 @@ Tài liệu này giải thích **kiến trúc tổng thể** và **từng luồn
 
 ## 1. Kiến trúc tổng quan
 
+> *Phụ trách: **Chung** — cả 2 thành viên nên nắm mục này trước, vì nó là bức tranh tổng thể bao trùm phần việc của cả hai.*
+
 Dự án theo mô hình phân lớp đơn giản, không dùng framework:
 
 ```
@@ -25,6 +27,8 @@ Không có tầng "Service" trung gian — DAO được gọi thẳng từ panel
 
 ## 2. Cơ chế `.form` + `.java` (IntelliJ GUI Designer) — điều quan trọng nhất cần hiểu trước
 
+> *Phụ trách: **Chung** — cơ chế nền tảng áp dụng cho cả `.form` của Thành viên A (Login, ListEmployeesPanel, AddEmployeesPanel) lẫn của Thành viên B (MainFrame, DashboardPanel), cộng thêm 2 ngoại lệ thuần Java của Thành viên B (AccountManagementPanel, CategoryManagementPanel).*
+
 Các màn hình `Login`, `MainFrame`, `DashboardPanel`, `ListEmployeesPanel`, `AddEmployeesPanel` được thiết kế bằng **IntelliJ GUI Designer** (kéo-thả), lưu trong file `.form` (XML mô tả layout dùng `GridLayoutManager`). Class `.java` tương ứng **không tự vẽ giao diện bằng code** — khi IntelliJ build, nó tự sinh một hàm `$$$setupUI$$$()` từ nội dung `.form` và "tiêm" vào bytecode `.class` (**chế độ "binary form generation"**).
 
 Hệ quả quan trọng:
@@ -38,6 +42,8 @@ Hệ quả quan trọng:
 ---
 
 ## 3. Khởi động ứng dụng
+
+> *Phụ trách: **Thành viên A** (Dữ liệu + Nghiệp vụ nhân viên) — `Login.java`/`.form` và `Session.java` (trong `model/`) đều thuộc phần việc của A.*
 
 ```
 Main.main() → new Login().setVisible(true)
@@ -57,6 +63,8 @@ Nếu đăng nhập thành công: `Session.setCurrentAccount(taiKhoan)` (lưu t�
 ---
 
 ## 4. `MainFrame` — khung chính & điều hướng
+
+> *Phụ trách: **Thành viên B** (Khung ứng dụng + Nghiệp vụ quản trị) — `view/MainFrame` + `.form` nằm trong phần việc của B.*
 
 `MainFrame` chứa: sidebar (nút Tổng quan/Quản lý/Phân quyền/Danh mục/Đăng xuất), top bar (logo, avatar = tên tài khoản), và 1 `contentPanel` dùng **`CardLayout`** để chuyển "trang" mà không mở `JFrame` mới.
 
@@ -85,6 +93,8 @@ addEmployeesPanel.setOnSavedOrCancelled(() -> { listEmployeesPanel.reloadData();
 
 ## 5. `ListEmployeesPanel` — trang "Quản lý" (trang phức tạp nhất)
 
+> *Phụ trách: **Thành viên A** (Dữ liệu + Nghiệp vụ nhân viên) — `view/panels/ListEmployeesPanel` thuộc phần việc của A.*
+
 Trang này có **3 chế độ hiển thị**, chuyển đổi bằng biến `viewMode`:
 
 | Mode | Khi nào | Nguồn dữ liệu |
@@ -109,6 +119,8 @@ Mọi hành động (đổi trang, đổi bộ lọc, thêm/sửa/xóa xong) đ�
 
 ## 6. `AddEmployeesPanel` — form Thêm/Sửa dùng chung
 
+> *Phụ trách: **Thành viên A** (Dữ liệu + Nghiệp vụ nhân viên) — `view/panels/AddEmployeesPanel` thuộc phần việc của A.*
+
 1 form Swing dùng cho **cả 2 mục đích**, phân biệt bằng field `editingEmployee` (`null` = đang Thêm mới):
 
 - `resetToAddMode()`: xóa trắng form, đổi tiêu đề "Thêm mới nhân viên", nạp lại combobox Phòng ban/Chức vụ (để đồng bộ nếu vừa có thay đổi ở trang Danh mục).
@@ -127,6 +139,8 @@ Mọi hành động (đổi trang, đổi bộ lọc, thêm/sửa/xóa xong) đ�
 ---
 
 ## 7. Tầng DAO — quy tắc chung
+
+> *Phụ trách: **Thành viên A** (Dữ liệu + Nghiệp vụ nhân viên) — toàn bộ `database/` (kể cả `dao/`) thuộc phần việc của A.*
 
 Tất cả DAO theo cùng 1 khuôn:
 
@@ -169,6 +183,8 @@ Dùng chung 1 hàm `appendAdvancedFilters()` để build câu `WHERE` động �
 
 ## 8. `CategoryManagementPanel` — CRUD dùng chung cho Phòng ban & Chức vụ
 
+> *Phụ trách: **Thành viên B** (Khung ứng dụng + Nghiệp vụ quản trị) — `view/panels/CategoryManagementPanel` thuộc phần việc của B.*
+
 `PhongBan` và `ChucVu` có cấu trúc dữ liệu giống hệt nhau (mã, tên, mô tả) nên cùng implement interface `DanhMuc { getId(), getTen(), getMoTa() }`. Nhờ vậy, `CategoryManagementPanel` chỉ cần viết **1 lớp `CategoryTab`** dùng chung cho cả 2 tab ("Phòng ban" / "Chức vụ"), nhận vào 1 `DanhMucDAO` (interface mà cả `PhongBanDAO` và `ChucVuDAO` cùng implement) — không phải viết trùng logic CRUD 2 lần.
 
 - **Mã** do người dùng tự nhập khi Thêm (không tự sinh) — validate bằng regex `^[A-Z]{1,5}$` (tối đa 5 chữ in hoa), tự động viết hoa chuỗi nhập vào trước khi kiểm tra.
@@ -181,6 +197,8 @@ Dùng chung 1 hàm `appendAdvancedFilters()` để build câu `WHERE` động �
 
 ## 9. `AccountManagementPanel` — Phân quyền tài khoản
 
+> *Phụ trách: **Thành viên B** (Khung ứng dụng + Nghiệp vụ quản trị) — `view/panels/AccountManagementPanel` thuộc phần việc của B (dù nó gọi xuống `TaiKhoanDAO` do A viết).*
+
 Tương tự `CategoryManagementPanel` (viết thuần Java, có cột "Thao tác" với renderer/editor tùy chỉnh), nhưng thao tác trên `TAIKHOAN`:
 
 - **Tạo tài khoản**: validate username phải đúng định dạng email (vì màn Đăng nhập dùng chung field này để check định dạng), mật khẩu ≥ 6 ký tự và khớp xác nhận, kiểm tra trùng username trước khi `TaiKhoanDAO.create()` (hàm này tự băm mật khẩu bằng `BCrypt.hashpw(pass, BCrypt.gensalt(12))` trước khi lưu).
@@ -189,6 +207,8 @@ Tương tự `CategoryManagementPanel` (viết thuần Java, có cột "Thao tá
 ---
 
 ## 10. `DashboardPanel` — Tổng quan
+
+> *Phụ trách: **Thành viên B** (Khung ứng dụng + Nghiệp vụ quản trị) — `view/panels/DashboardPanel` thuộc phần việc của B.*
 
 `loadDashboardData()` gọi 3 hàm DAO lấy số thật (không còn số giả cứng như bản đầu):
 - `nhanVienDAO.countAll()` — tổng số nhân viên.
@@ -201,6 +221,8 @@ Tương tự `CategoryManagementPanel` (viết thuần Java, có cột "Thao tá
 
 ## 11. Bảo mật mật khẩu (BCrypt)
 
+> *Phụ trách: **Chung** — cơ chế hash/`checkpw` nằm trong `TaiKhoanDAO` (Thành viên A), nhưng được cả màn Đăng nhập (A) lẫn màn Tạo tài khoản trong `AccountManagementPanel` (Thành viên B) sử dụng.*
+
 - **Không bao giờ** lưu mật khẩu gốc — cột `TAIKHOAN.MatKhauHash` chỉ lưu chuỗi hash BCrypt (`$2a$12$...`).
 - Tạo tài khoản: `BCrypt.hashpw(matKhauGoc, BCrypt.gensalt(12))`.
 - Đăng nhập: `BCrypt.checkpw(matKhauNhap, hashTrongDB)` — hàm này tự tách salt từ trong hash để so khớp, không cần lưu salt riêng.
@@ -209,6 +231,8 @@ Tương tự `CategoryManagementPanel` (viết thuần Java, có cột "Thao tá
 ---
 
 ## 12. File cấu hình & dữ liệu runtime (không commit lên Git)
+
+> *Phụ trách: **Chung** — `Data.Basesql.sql`/`db.properties` do Thành viên A phụ trách thiết kế, nhưng `avatars/`, `logs/`, `out/` phát sinh từ hoạt động của cả 2 phía (upload avatar ở A, chạy/build ở cả hai) nên cả nhóm cần biết.*
 
 | Đường dẫn | Nội dung | Vì sao gitignore |
 |---|---|---|

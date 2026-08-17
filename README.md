@@ -1,6 +1,6 @@
 # QLNhanSu — Hệ thống Quản lý Nhân sự (HR Management)
 
-Ứng dụng desktop quản lý nhân sự viết bằng **Java Swing** (giao diện dựng bằng IntelliJ GUI Designer, file `.form` + `.java`), kết nối **MySQL** qua JDBC thuần (không dùng framework/ORM). Không dùng Maven/Gradle — toàn bộ thư viện ngoài được thêm thủ công qua IntelliJ Project Structure.
+Ứng dụng desktop quản lý nhân sự viết bằng **Java Swing** (giao diện dựng bằng IntelliJ GUI Designer, file `.form` + `.java`), kết nối **MySQL** qua JDBC thuần (không dùng framework/ORM). Toàn bộ thư viện ngoài được thêm thủ công qua IntelliJ Project Structure gồm: ....
 
 ## 1. Công nghệ sử dụng
 
@@ -10,7 +10,7 @@
 | Giao diện | IntelliJ GUI Designer (`.form` + binding sang `.java`) |
 | Cơ sở dữ liệu | MySQL (JDBC thuần, `PreparedStatement`) |
 | Mã hóa mật khẩu | jBCrypt (`org.mindrot.jbcrypt`, phiên bản đọc hash dạng `$2a$`) |
-| Build | Không Maven/Gradle — thư viện thêm thủ công vào module `QLNhanSu` |
+
 
 ## 2. Cấu trúc thư mục thực tế
 
@@ -96,14 +96,14 @@ Final_1/
 
 > Gợi ý chia theo ranh giới module có sẵn trong code — đổi tên "Thành viên A/B" thành tên thật khi báo cáo.
 
-**Thành viên A — Tầng dữ liệu + Nghiệp vụ nhân viên**
+**Mã sinh viên - Thành viên A : Dữ liệu + Nghiệp vụ nhân viên**
 - `database/` (DBConnection, toàn bộ `dao/`), toàn bộ `model/`
 - `view/Login.java` + `.form` (đăng nhập, BCrypt)
 - `view/panels/ListEmployeesPanel` + `AddEmployeesPanel` (CRUD, tìm kiếm, lọc, sinh Mã NV, upload avatar)
 - `util/ActivityLogger`, `util/ValidationUtil`, `util/DateUtil`, `util/TableModelUtil`
 - `Data.Basesql.sql` (thiết kế schema + dữ liệu mẫu)
 
-**Thành viên B — Khung ứng dụng + Nghiệp vụ quản trị**
+**Mã sinh viên - Thành viên B : Khung ứng dụng + Nghiệp vụ quản trị**
 - `view/MainFrame` + `.form` (sidebar, top bar, điều hướng CardLayout, phân quyền hiển thị theo vai trò)
 - `view/panels/DashboardPanel` (thống kê tổng quan)
 - `view/panels/AccountManagementPanel` (tạo/khóa/đổi vai trò tài khoản)
@@ -120,6 +120,111 @@ Final_1/
 4. **Build & chạy** `view.Main` trong IntelliJ (Build project trước để GUI Designer sinh code từ các file `.form`).
 5. **Đăng nhập thử**: `admin@hrms.com` / `123456` (tài khoản Admin có sẵn trong dữ liệu mẫu).
 
-## 6. Tài liệu liên quan
+## 6. Cơ sở dữ liệu (Database Schema)
 
-Xem [`GIAI_THICH_CODE.md`](GIAI_THICH_CODE.md) để hiểu chi tiết kiến trúc, luồng xử lý của từng chức năng.
+Database `qlnhansu` gồm **4 bảng**, được tạo bởi [`Data.Basesql.sql`](Data.Basesql.sql). Không dùng ORM — mọi thao tác đọc/ghi đều qua `PreparedStatement` thuần trong các lớp `dao/`.
+
+### Sơ đồ quan hệ (ERD)
+
+```mermaid
+erDiagram
+    PHONGBAN ||--o{ NHANVIEN : "1 phòng ban - N nhân viên"
+    CHUCVU   ||--o{ NHANVIEN : "1 chức vụ - N nhân viên"
+    NHANVIEN ||--o| TAIKHOAN : "1 nhân viên - 0..1 tài khoản"
+
+    PHONGBAN {
+        varchar_5 MaPB PK
+        varchar_100 TenPhongBan
+        varchar_255 MoTa
+    }
+    CHUCVU {
+        varchar_5 MaCV PK
+        varchar_100 TenChucVu
+        varchar_255 MoTa
+    }
+    NHANVIEN {
+        varchar_10 MaNV PK
+        varchar_100 HoTen
+        date NgaySinh
+        enum GioiTinh
+        varchar_20 SoCCCD UK
+        varchar_15 SoDienThoai
+        varchar_100 Email UK
+        varchar_255 DiaChi
+        varchar_255 AvatarPath
+        varchar_5 MaPB FK
+        varchar_5 MaCV FK
+        date NgayVaoLam
+        varchar_50 LoaiHopDong
+        decimal MucLuongCoBan
+        enum TrangThai
+        datetime NgayTao
+        datetime NgayCapNhat
+    }
+    TAIKHOAN {
+        int MaTK PK
+        varchar_100 TenDangNhap UK
+        varchar_255 MatKhauHash
+        enum VaiTro
+        varchar_10 MaNV FK
+        enum TrangThai
+        datetime NgayTao
+        datetime LanDangNhapCuoi
+    }
+```
+
+### Chi tiết từng bảng
+
+**`PHONGBAN`** — danh mục phòng ban
+| Cột | Kiểu | Ghi chú |
+|---|---|---|
+| `MaPB` | `varchar(5)` PK | Người dùng tự đặt, tối đa 5 chữ in hoa (vd `IT`, `KD`) |
+| `TenPhongBan` | `varchar(100)` | `UNIQUE`, không được trùng tên |
+| `MoTa` | `varchar(255)` | Tùy chọn |
+
+**`CHUCVU`** — danh mục chức vụ (cấu trúc tương tự `PHONGBAN`)
+| Cột | Kiểu | Ghi chú |
+|---|---|---|
+| `MaCV` | `varchar(5)` PK | Vd `NV`, `TN`, `QL`, `TP`, `GD` |
+| `TenChucVu` | `varchar(100)` | `UNIQUE` |
+| `MoTa` | `varchar(255)` | Tùy chọn |
+
+**`NHANVIEN`** — hồ sơ nhân viên (bảng trung tâm)
+| Cột | Kiểu | Ghi chú |
+|---|---|---|
+| `MaNV` | `varchar(10)` PK | **Tự sinh**: `MaPB` + 3 chữ số, đếm riêng theo từng phòng ban (vd `IT001`, `KD002`) |
+| `HoTen` | `varchar(100)` | Bắt buộc |
+| `NgaySinh` | `date` | |
+| `GioiTinh` | `enum('Nam','Nữ','Khác')` | Mặc định `Khác` |
+| `SoCCCD` | `varchar(20)` | `UNIQUE` |
+| `SoDienThoai` | `varchar(15)` | |
+| `Email` | `varchar(100)` | `UNIQUE` |
+| `DiaChi` | `varchar(255)` | |
+| `AvatarPath` | `varchar(255)` | Đường dẫn tương đối tới file trong `avatars/` |
+| `MaPB` | `varchar(5)` FK → `PHONGBAN.MaPB` | `ON DELETE SET NULL` — xóa phòng ban thì nhân viên không mất, chỉ bị bỏ trống |
+| `MaCV` | `varchar(5)` FK → `CHUCVU.MaCV` | `ON DELETE SET NULL` tương tự |
+| `NgayVaoLam` | `date` | |
+| `LoaiHopDong` | `varchar(50)` | Vd "Chính thức", "Thử việc", "Thời vụ" |
+| `MucLuongCoBan` | `decimal(15,2)` | Mặc định 0 |
+| `TrangThai` | `enum('DangLamViec','NghiViec','TamNghi')` | Mặc định `DangLamViec` |
+| `NgayTao` / `NgayCapNhat` | `datetime` | Tự động set bởi MySQL (`DEFAULT CURRENT_TIMESTAMP` / `ON UPDATE`) |
+
+Có index trên `HoTen`, `TrangThai`, `GioiTinh` để tăng tốc tìm kiếm/lọc.
+
+**`TAIKHOAN`** — tài khoản đăng nhập + phân quyền
+| Cột | Kiểu | Ghi chú |
+|---|---|---|
+| `MaTK` | `int` PK, `AUTO_INCREMENT` | |
+| `TenDangNhap` | `varchar(100)` | `UNIQUE`, phải đúng định dạng email |
+| `MatKhauHash` | `varchar(255)` | **Chỉ lưu hash BCrypt** (dạng `$2a$...`), không bao giờ lưu mật khẩu gốc |
+| `VaiTro` | `enum('Admin','NhanVien')` | Mặc định `NhanVien` |
+| `MaNV` | `varchar(10)` FK → `NHANVIEN.MaNV`, nullable | Có thể `NULL` (tài khoản kỹ thuật không gắn hồ sơ NV, vd admin) |
+| `TrangThai` | `enum('HoatDong','KhoaTaiKhoan')` | Mặc định `HoatDong` |
+| `NgayTao` / `LanDangNhapCuoi` | `datetime` | |
+
+### Quan hệ chính
+- `PHONGBAN` **1 — N** `NHANVIEN` (1 phòng ban có nhiều nhân viên; nhân viên có thể chưa gán phòng ban).
+- `CHUCVU` **1 — N** `NHANVIEN` (tương tự, qua `MaCV`).
+- `NHANVIEN` **1 — 0..1** `TAIKHOAN` (mỗi nhân viên có tối đa 1 tài khoản đăng nhập; không bắt buộc phải có).
+- Xóa `PHONGBAN`/`CHUCVU`/`NHANVIEN` đều dùng `ON DELETE SET NULL` — xóa "cha" không xóa dây chuyền "con", chỉ gỡ liên kết.
+
