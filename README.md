@@ -94,33 +94,21 @@ Final_1/
 
 ## 4. Phân chia công việc nhóm (2 người)
 
-> Gợi ý chia theo ranh giới module có sẵn trong code — đổi tên "Thành viên A/B" thành tên thật khi báo cáo.
-
-**Mã sinh viên - Thành viên A : Dữ liệu + Nghiệp vụ nhân viên**
+**A47752 - HÀ DUY ANH : Dữ liệu + Nghiệp vụ nhân viên**
 - `database/` (DBConnection, toàn bộ `dao/`), toàn bộ `model/`
 - `view/Login.java` + `.form` (đăng nhập, BCrypt)
 - `view/panels/ListEmployeesPanel` + `AddEmployeesPanel` (CRUD, tìm kiếm, lọc, sinh Mã NV, upload avatar)
 - `util/ActivityLogger`, `util/ValidationUtil`, `util/DateUtil`, `util/TableModelUtil`
 - `Data.Basesql.sql` (thiết kế schema + dữ liệu mẫu)
 
-**Mã sinh viên - Thành viên B : Khung ứng dụng + Nghiệp vụ quản trị**
+**A48595 - NGUYỄN TIẾN PHÚC : Khung ứng dụng + Nghiệp vụ quản trị**
 - `view/MainFrame` + `.form` (sidebar, top bar, điều hướng CardLayout, phân quyền hiển thị theo vai trò)
 - `view/panels/DashboardPanel` (thống kê tổng quan)
 - `view/panels/AccountManagementPanel` (tạo/khóa/đổi vai trò tài khoản)
 - `view/panels/CategoryManagementPanel` (CRUD Phòng ban/Chức vụ)
 - Thiết kế giao diện `.form` (bố cục, căn chỉnh trong GUI Designer), kiểm thử toàn bộ luồng end-to-end
 
-## 5. Hướng dẫn cài đặt & chạy
-
-1. **Thêm thư viện** vào module `QLNhanSu` (IntelliJ → File → Project Structure → Modules → QLNhanSu → Dependencies):
-   - `jbcrypt-0.4.jar` (org.mindrot.jbcrypt)
-   - MySQL Connector/J (mysql-connector-j)
-2. **Tạo database**: chạy toàn bộ `Data.Basesql.sql` trong MySQL (phpMyAdmin/CLI) — script tự `DROP DATABASE IF EXISTS qlnhansu` rồi tạo lại từ đầu kèm dữ liệu mẫu (6 phòng ban, 5 chức vụ, 20 nhân viên, 1 tài khoản admin).
-3. **Cấu hình kết nối**: copy `src/src/database/db.properties.example` thành `src/src/database/db.properties`, sửa lại `db.url` / `db.username` / `db.password` cho khớp MySQL của bạn (mặc định: `localhost:3306`, user `root`, không mật khẩu).
-4. **Build & chạy** `view.Main` trong IntelliJ (Build project trước để GUI Designer sinh code từ các file `.form`).
-5. **Đăng nhập thử**: `admin@hrms.com` / `123456` (tài khoản Admin có sẵn trong dữ liệu mẫu).
-
-## 6. Cơ sở dữ liệu (Database Schema)
+## 5. Cơ sở dữ liệu (Database Schema)
 
 Database `qlnhansu` gồm **4 bảng**, được tạo bởi [`Data.Basesql.sql`](Data.Basesql.sql). Không dùng ORM — mọi thao tác đọc/ghi đều qua `PreparedStatement` thuần trong các lớp `dao/`.
 
@@ -228,3 +216,12 @@ Có index trên `HoTen`, `TrangThai`, `GioiTinh` để tăng tốc tìm kiếm/l
 - `NHANVIEN` **1 — 0..1** `TAIKHOAN` (mỗi nhân viên có tối đa 1 tài khoản đăng nhập; không bắt buộc phải có).
 - Xóa `PHONGBAN`/`CHUCVU`/`NHANVIEN` đều dùng `ON DELETE SET NULL` — xóa "cha" không xóa dây chuyền "con", chỉ gỡ liên kết.
 
+## 6. Hướng dẫn cài đặt & chạy
+
+1. **Thêm thư viện** vào module `QLNhanSu` (IntelliJ → File → Project Structure → Modules → QLNhanSu → Dependencies):
+   - `jbcrypt-0.4.jar` (org.mindrot.jbcrypt)
+   - MySQL Connector/J (mysql-connector-j)
+2. **Tạo database**: chạy toàn bộ `Data.Basesql.sql` trong MySQL (phpMyAdmin/CLI) — script tự `DROP DATABASE IF EXISTS qlnhansu` rồi tạo lại từ đầu kèm dữ liệu mẫu (6 phòng ban, 5 chức vụ, 20 nhân viên, 1 tài khoản admin).
+3. **Cấu hình kết nối**: copy `src/src/database/db.properties.example` thành `src/src/database/db.properties`, sửa lại `db.url` / `db.username` / `db.password` cho khớp MySQL của bạn (mặc định: `localhost:3306`, user `root`, không mật khẩu).
+4. **Build & chạy** `view.Main` trong IntelliJ (Build project trước để GUI Designer sinh code từ các file `.form`).
+5. **Đăng nhập thử**: `admin@hrms.com` / `123456` (tài khoản Admin có sẵn trong dữ liệu mẫu).
