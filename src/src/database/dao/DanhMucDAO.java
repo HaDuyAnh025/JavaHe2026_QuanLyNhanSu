@@ -5,7 +5,6 @@ import model.DanhMuc;
 import java.sql.SQLException;
 import java.util.List;
 
-/** PhongBanDAO va ChucVuDAO cung implement interface nay de dung chung CategoryManagementPanel. */
 public interface DanhMucDAO {
 
     List<? extends DanhMuc> findAll() throws SQLException;
@@ -16,6 +15,5 @@ public interface DanhMucDAO {
 
     void delete(String id) throws SQLException;
 
-    /** So nhan vien dang thuoc danh muc nay (de canh bao truoc khi xoa). */
     int countUsage(String id) throws SQLException;
 }

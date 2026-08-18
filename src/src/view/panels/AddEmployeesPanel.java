@@ -26,14 +26,8 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.UUID;
 
-/**
- * Noi dung man hinh "Them nhan vien" / "Sua nhan vien" (dung chung 1 form,
- * chuyen che do qua loadForEdit()/resetToAddMode()).
- * Cac field PHAI trung ten voi binding trong AddEmployeesPanel.form.
- */
 public class AddEmployeesPanel extends JPanel {
 
-    // ===== Sinh tu AddEmployeesPanel.form =====
     private JPanel rootPanel;
 
     private JLabel lblFormTitle;
@@ -69,24 +63,18 @@ public class AddEmployeesPanel extends JPanel {
     private final PhongBanDAO phongBanDAO = new PhongBanDAO();
     private final ChucVuDAO chucVuDAO = new ChucVuDAO();
 
-    /** null = dang o che do Them moi; khac null = dang sua nhan vien nay. */
     private NhanVien editingEmployee;
     private String selectedAvatarPath;
 
-    /** Callback de MainFrame quay lai danh sach sau khi luu hoac huy. */
     private Runnable onSavedOrCancelled;
 
     public AddEmployeesPanel() {
-        mãNhânViênTextField.setEditable(false); // MaNV do he thong tu sinh (MaPhongBan + so thu tu), khong cho sua tay
+        mãNhânViênTextField.setEditable(false);
         setupActions();
         setupGenderRadios();
         resetToAddMode();
     }
 
-    /**
-     * Dam bao "Gioi tinh" chi chon duoc 1 trong 3 (Nam/Nu/Khac): tu bo chon 2 nut
-     * con lai moi khi bam 1 nut, khong phu thuoc hoan toan vao ButtonGroup cua .form.
-     */
     private void setupGenderRadios() {
         namRadioButton.addActionListener(e -> selectSingleGenderRadio(namRadioButton));
         nữRadioButton.addActionListener(e -> selectSingleGenderRadio(nữRadioButton));
@@ -141,7 +129,6 @@ public class AddEmployeesPanel extends JPanel {
         });
     }
 
-    /** Mo dialog nho chon ngay bang JSpinner (khong can them thu vien ngoai). */
     private void pickDate(JTextField targetField) {
         LocalDate initial = safeParse(targetField.getText());
         if (initial == null) {
@@ -168,12 +155,6 @@ public class AddEmployeesPanel extends JPanel {
         }
     }
 
-    /**
-     * Mo JFileChooser de chon anh dai dien, COPY file vao thu muc avatars/ canh
-     * project (dat ten theo UUID de khong trung), roi luu DUONG DAN TUONG DOI
-     * ("avatars/xxx.jpg") vao AvatarPath - khong luu duong dan goc tren may
-     * nguoi dung, vi duong dan do co the mat/di chuyen sau nay.
-     */
     private void uploadAvatar() {
         JFileChooser chooser = new JFileChooser();
         chooser.setFileFilter(new FileNameExtensionFilter("Ảnh (JPEG, PNG)", "jpg", "jpeg", "png"));
@@ -204,7 +185,6 @@ public class AddEmployeesPanel extends JPanel {
         return dot < 0 ? "" : fileName.substring(dot + 1);
     }
 
-    /** Hien anh that (thu nho) len chinh nut avatarUploadButton lam preview. */
     private void showAvatarPreview(String relativePath) {
         if (relativePath == null) {
             avatarUploadButton.setIcon(null);
@@ -284,7 +264,6 @@ public class AddEmployeesPanel extends JPanel {
         return true;
     }
 
-    /** Luu ho so (them moi hoac cap nhat tuy che do). Tra ve true neu luu thanh cong. */
     private boolean saveEmployee() {
         NhanVien nv = buildEmployeeFromForm();
         try {
@@ -340,9 +319,8 @@ public class AddEmployeesPanel extends JPanel {
         return nv;
     }
 
-    /** Duoc ListEmployeesPanel/MainFrame goi khi nguoi dung bam "Sua" tren mot dong. */
     public void loadForEdit(NhanVien nv) {
-        populateCombos(); // dong bo lai neu Phong ban/Chuc vu vua duoc sua o man Danh muc
+        populateCombos();
         this.editingEmployee = nv;
         lblFormTitle.setText("Sửa thông tin nhân viên");
         lưuHồSơButton.setText("Cập nhật hồ sơ");
@@ -365,9 +343,8 @@ public class AddEmployeesPanel extends JPanel {
         mứcLươngCơBảnTextField.setText(nv.getMucLuongCoBan() == null ? "" : nv.getMucLuongCoBan().toPlainString());
     }
 
-    /** Duoc MainFrame goi khi mo man hinh nay de them moi (tu nut "+ Them nhan vien"). */
     public void resetToAddMode() {
-        populateCombos(); // dong bo lai neu Phong ban/Chuc vu vua duoc sua o man Danh muc
+        populateCombos();
         this.editingEmployee = null;
         lblFormTitle.setText("Thêm mới nhân viên");
         lưuHồSơButton.setText("Lưu hồ sơ");

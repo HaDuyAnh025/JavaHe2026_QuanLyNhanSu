@@ -7,7 +7,7 @@ public class NhanVien {
     private String maNV;
     private String hoTen;
     private LocalDate ngaySinh;
-    private String gioiTinh; // "Nam" | "Nữ" | "Khác"
+    private String gioiTinh;
     private String soCCCD;
     private String soDienThoai;
     private String email;
@@ -15,15 +15,15 @@ public class NhanVien {
     private String avatarPath;
 
     private String maPB;
-    private String tenPhongBan; // do JOIN nap vao, chi de hien thi
+    private String tenPhongBan;
     private String maCV;
-    private String tenChucVu;   // do JOIN nap vao, chi de hien thi
+    private String tenChucVu;
 
     private LocalDate ngayVaoLam;
     private String loaiHopDong;
     private BigDecimal mucLuongCoBan;
 
-    private String trangThai; // "DangLamViec" | "NghiViec" | "TamNghi"
+    private String trangThai;
 
     public String getMaNV() {
         return maNV;

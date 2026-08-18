@@ -7,11 +7,6 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Properties;
 
-/**
- * Doc thong tin ket noi tu db.properties (cung thu muc voi class nay) va
- * mo Connection JDBC moi cho moi loi goi. Goi ket noi xong nho close()
- * (dung try-with-resources) de tra ve pool cua driver.
- */
 public class DBConnection {
 
     private static final Properties CONFIG = loadConfig();

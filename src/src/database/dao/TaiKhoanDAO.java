@@ -19,7 +19,6 @@ public class TaiKhoanDAO {
                     "tk.TrangThai, tk.NgayTao, tk.LanDangNhapCuoi " +
                     "FROM TAIKHOAN tk LEFT JOIN NHANVIEN nv ON tk.MaNV = nv.MaNV ";
 
-    /** Tra ve TaiKhoan neu dang nhap dung va tai khoan dang HoatDong, nguoc lai tra ve null. */
     public TaiKhoan checkLogin(String tenDangNhap, String matKhauGoc) throws SQLException {
         String sql = SELECT_BASE + "WHERE tk.TenDangNhap = ?";
         try (Connection conn = DBConnection.getConnection();
@@ -75,7 +74,6 @@ public class TaiKhoanDAO {
         }
     }
 
-    /** Tao tai khoan moi, khong gan ho so nhan vien (MaNV luon NULL). */
     public void create(String tenDangNhap, String matKhauGoc, String vaiTro) throws SQLException {
         String hash = BCrypt.hashpw(matKhauGoc, BCrypt.gensalt(12));
         String sql = "INSERT INTO TAIKHOAN (TenDangNhap, MatKhauHash, VaiTro, MaNV, TrangThai) VALUES (?,?,?,NULL,'HoatDong')";

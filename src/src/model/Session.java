@@ -1,8 +1,5 @@
 package model;
 
-/**
- * Giu thong tin tai khoan dang dang nhap trong phien lam viec hien tai cua ung dung.
- */
 public class Session {
 
     private static TaiKhoan currentAccount;

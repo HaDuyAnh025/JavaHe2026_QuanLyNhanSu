@@ -15,11 +15,6 @@ import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.List;
 import java.util.regex.Pattern;
 
-/**
- * Man hinh "Danh muc" (thay cho "Cai dat" cu): quan ly Phong ban va Chuc vu.
- * PhongBan/ChucVu cung dang du lieu (id, ten, mo ta) nen dung chung 1 tab
- * CRUD (xem CategoryTab) thay vi viet trung 2 lan.
- */
 public class CategoryManagementPanel extends JPanel {
 
     public CategoryManagementPanel() {
@@ -34,7 +29,6 @@ public class CategoryManagementPanel extends JPanel {
         return this;
     }
 
-    /** 1 tab CRUD dung chung cho Phong ban / Chuc vu. */
     private static class CategoryTab extends JPanel {
         private static final Pattern MA_PATTERN = Pattern.compile("^[A-Z]{1,5}$");
         private static final int MAX_VISIBLE_ROWS = 8;
@@ -73,8 +67,6 @@ public class CategoryManagementPanel extends JPanel {
             table.getColumnModel().getColumn(3).setPreferredWidth(140);
             table.getColumnModel().getColumn(3).setMaxWidth(140);
 
-            // Chi cao vua du so hang hien co (toi da MAX_VISIBLE_ROWS), tranh
-            // de lai 1 khoang trong lon phia duoi khi danh muc con it hang.
             tableScroll = new JScrollPane(table);
             JPanel centerHolder = new JPanel(new BorderLayout());
             centerHolder.add(tableScroll, BorderLayout.NORTH);
@@ -96,7 +88,6 @@ public class CategoryManagementPanel extends JPanel {
             }
         }
 
-        /** Tinh lai chieu cao khung bang theo so hang thuc te (toi da MAX_VISIBLE_ROWS, con lai se tu cuon). */
         private void updateTableHeight() {
             int rowCount = Math.max(tableModel.getRowCount(), 1);
             int visibleRows = Math.min(rowCount, MAX_VISIBLE_ROWS);
@@ -180,7 +171,6 @@ public class CategoryManagementPanel extends JPanel {
             JOptionPane.showMessageDialog(this, message, "Lỗi", JOptionPane.ERROR_MESSAGE);
         }
 
-        /** Renderer: hien 2 nut Sua/Xoa o cot "Thao tac" cho moi hang. */
         private static class ActionCellRenderer extends JPanel implements TableCellRenderer {
             ActionCellRenderer() {
                 super(new FlowLayout(FlowLayout.CENTER, 4, 2));
@@ -195,7 +185,6 @@ public class CategoryManagementPanel extends JPanel {
             }
         }
 
-        /** Editor: bam that vao nut Sua/Xoa o cot "Thao tac" de thao tac tren dung hang do. */
         private class ActionCellEditor extends AbstractCellEditor implements TableCellEditor {
             private final JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 4, 2));
             private int editingRow = -1;

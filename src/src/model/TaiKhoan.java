@@ -6,11 +6,11 @@ public class TaiKhoan {
     private int maTK;
     private String tenDangNhap;
     private String matKhauHash;
-    private String vaiTro; // "Admin" | "NhanVien"
+    private String vaiTro;
 
     private String maNV;
-    private String hoTenNhanVien; // do JOIN nap vao, chi de hien thi
-    private String trangThai;     // "HoatDong" | "KhoaTaiKhoan"
+    private String hoTenNhanVien;
+    private String trangThai;
 
     private LocalDateTime ngayTao;
     private LocalDateTime lanDangNhapCuoi;

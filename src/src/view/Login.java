@@ -13,14 +13,8 @@ import java.awt.event.MouseEvent;
 import java.sql.SQLException;
 import java.util.regex.Pattern;
 
-/**
- * Màn hình Đăng nhập.
- * Các field bên dưới PHẢI trùng tên với thuộc tính "binding" trong Login.form
- * để IntelliJ GUI Designer tự sinh phần layout ($$$setupUI$$$) khi build.
- */
 public class Login extends JFrame {
 
-    // ==== Các field khớp binding trong Login.form ====
     private JPanel rootPanel;
     private JPanel cardPanel;
     private JTextField txtUsername;
@@ -35,11 +29,9 @@ public class Login extends JFrame {
     private JLabel lblNoAccount;
     private JLabel lblRegister;
 
-    // trạng thái ẩn/hiện mật khẩu
     private boolean isPasswordVisible = false;
     private final char defaultEchoChar;
 
-    // ---- Quy tắc kiểm tra ĐỊNH DẠNG (chưa nối DB, chưa check tài khoản có tồn tại hay không) ----
     private static final Pattern EMAIL_PATTERN =
             Pattern.compile("^[\\w.+-]+@[\\w-]+\\.[a-zA-Z]{2,}$");
     private static final int MIN_PASSWORD_LENGTH = 6;
@@ -59,46 +51,37 @@ public class Login extends JFrame {
         attachEvents();
     }
 
-    // ================== STYLE (giao dien co ban, khong dung mau) ==================
     private void styleComponents() {
-        // Nut an/hien mat khau: chu "Hien"/"An" thay vi icon, khong ve vien nut
         btnTogglePassword.setBorderPainted(false);
         btnTogglePassword.setContentAreaFilled(false);
         btnTogglePassword.setFocusPainted(false);
         btnTogglePassword.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btnTogglePassword.setText("Hiện");
 
-        // Con tro tay khi ruot qua link de nguoi dung biet co the bam duoc
         lblForgotPassword.setCursor(new Cursor(Cursor.HAND_CURSOR));
         lblRegister.setCursor(new Cursor(Cursor.HAND_CURSOR));
     }
 
-    // ================== SỰ KIỆN ==================
     private void attachEvents() {
 
-        // Toggle hiện/ẩn mật khẩu
         btnTogglePassword.addActionListener(e -> {
             isPasswordVisible = !isPasswordVisible;
             if (isPasswordVisible) {
-                txtPassword.setEchoChar((char) 0); // hiện chữ thật
+                txtPassword.setEchoChar((char) 0);
                 btnTogglePassword.setText("Ẩn");
             } else {
-                txtPassword.setEchoChar(defaultEchoChar); // ẩn lại
+                txtPassword.setEchoChar(defaultEchoChar);
                 btnTogglePassword.setText("Hiện");
             }
         });
 
-        // Nút Đăng nhập
         btnLogin.addActionListener(e -> handleLogin());
 
-        // Cho phép Enter ở ô mật khẩu = bấm Đăng nhập
         txtPassword.addActionListener(e -> handleLogin());
 
-        // Quên mật khẩu
         lblForgotPassword.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                // TODO: mở form ForgotPassword hoặc gửi email reset
                 JOptionPane.showMessageDialog(Login.this,
                         "Chức năng khôi phục mật khẩu đang được phát triển.",
                         "Quên mật khẩu",
@@ -106,11 +89,9 @@ public class Login extends JFrame {
             }
         });
 
-        // Yêu cầu cấp tài khoản
         lblRegister.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                // TODO: mở form Register / gửi yêu cầu cho admin
                 JOptionPane.showMessageDialog(Login.this,
                         "Vui lòng liên hệ quản trị viên để được cấp tài khoản.",
                         "Yêu cầu cấp tài khoản",
@@ -119,14 +100,10 @@ public class Login extends JFrame {
         });
     }
 
-    // ================== LOGIC ĐĂNG NHẬP ==================
-    // Buoc 1: kiem tra dinh dang (email hop le + mat khau du do dai).
-    // Buoc 2: kiem tra that voi CSDL qua TaiKhoanDAO (BCrypt.checkpw + trang thai tai khoan).
     private void handleLogin() {
         String username = txtUsername.getText() == null ? "" : txtUsername.getText().trim();
         String password = new String(txtPassword.getPassword());
 
-        // ---- Validate ĐỊNH DẠNG (chưa check với CSDL) ----
         if (username.isEmpty()) {
             showError("Vui lòng nhập tên đăng nhập / email.");
             txtUsername.requestFocus();
@@ -148,7 +125,6 @@ public class Login extends JFrame {
             return;
         }
 
-        // ---- Kiem tra voi CSDL (BCrypt.checkpw + trang thai tai khoan) ----
         btnLogin.setEnabled(false);
         try {
             TaiKhoan taiKhoan = new TaiKhoanDAO().checkLogin(username, password);
@@ -158,12 +134,11 @@ public class Login extends JFrame {
             }
 
             if (chkRemember.isSelected()) {
-                // TODO: lưu thông tin đăng nhập (vd: Preferences API hoặc file cấu hình)
             }
 
             Session.setCurrentAccount(taiKhoan);
-            new MainFrame().setVisible(true); // mo man hinh chinh (co Dashboard ben trong)
-            this.dispose();                   // dong man hinh Login
+            new MainFrame().setVisible(true);
+            this.dispose();
         } catch (SQLException e) {
             showError("Không thể kết nối cơ sở dữ liệu: " + e.getMessage());
         } finally {
@@ -175,9 +150,6 @@ public class Login extends JFrame {
         JOptionPane.showMessageDialog(this, message, "Lỗi", JOptionPane.ERROR_MESSAGE);
     }
 
-    // ================== CHẠY THỬ ==================
-    // Ghi chú: entry point CHÍNH THỨC của app là Main.java (package view).
-    // Ham main() nay giu lai chi de tien test rieng man hinh Login khi can.
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> new Login().setVisible(true));
     }

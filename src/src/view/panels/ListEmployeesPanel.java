@@ -22,24 +22,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 
-/**
- * Noi dung man hinh "Quan ly" (danh sach nhan vien).
- * Cac field PHAI trung ten voi binding trong ListEmployeesPanel.form.
- *
- * Man hinh nay co 2 trang thai hien thi tieu de/noi dung bang, chuyen doi
- * bang code (viec tim kiem nhanh duoc thuc hien tu o "Tim kiem nhanh" o
- * ngay dau trang nay):
- *
- *  - BROWSE (mac dinh): tieu de "Danh sach nhan vien" + phu de, chan trang
- *    hien "Hien thi X-Y cua Z nhan vien".
- *  - SEARCH RESULT (sau khi go tu khoa o "Tim kiem nhanh" hoac ap dung
- *    bo loc nang cao): tieu de doi thanh "Ket qua tim kiem".
- *
- * Nut "Loc" va "Xuat" o header LUON hien thi (ca 2 trang thai tren).
- */
 public class ListEmployeesPanel extends JPanel {
 
-    // ===== Sinh tu ListEmployeesPanel.form =====
     private JPanel rootPanel;
 
     private JLabel lblPageTitle;
@@ -50,7 +34,6 @@ public class ListEmployeesPanel extends JPanel {
     private JButton lọcButton;
     private JButton xuấtButton;
 
-    // ----- Bang loc nang cao (an/hien khi bam nut "Loc") -----
     private JPanel filterPanel;
     private JComboBox phòngBanComboBox;
     private JComboBox chứcVụComboBox;
@@ -89,15 +72,13 @@ public class ListEmployeesPanel extends JPanel {
     private int totalCount = 0;
     private List<NhanVien> currentRows = Collections.emptyList();
 
-    /** Callback de MainFrame biet khi nao can chuyen sang man hinh "Them nhan vien". */
     private Runnable onAddEmployeeRequested;
-    /** Callback de MainFrame mo man hinh "Them nhan vien" o che do Sua voi nhan vien duoc chon. */
     private Consumer<NhanVien> onEditEmployeeRequested;
 
     public ListEmployeesPanel() {
         setupTable();
         setupActions();
-        exitSearchMode(); // trang thai mac dinh = browse (cung se nap filter combo)
+        exitSearchMode();
     }
 
     private void setupTable() {
@@ -136,7 +117,6 @@ public class ListEmployeesPanel extends JPanel {
         tìmKiếmNhanhTextField.addActionListener(e -> performQuickSearch());
         tìmKiếmButton.addActionListener(e -> performQuickSearch());
 
-        // Bam "Loc" chi de AN/HIEN bang loc ben trai, khong doi trang thai tim kiem
         lọcButton.addActionListener(e -> toggleFilterPanel());
         xuấtButton.addActionListener(e -> exportResults());
 
@@ -149,11 +129,6 @@ public class ListEmployeesPanel extends JPanel {
         setupGenderFilterRadios();
     }
 
-    /**
-     * Dam bao bo loc "Gioi tinh" chi chon duoc 1 trong 4 (Tat ca/Nam/Nu/Khac): tu
-     * bo chon cac nut con lai moi khi bam 1 nut, khong phu thuoc hoan toan vao
-     * ButtonGroup cua .form.
-     */
     private void setupGenderFilterRadios() {
         tấtCảRadioButton.addActionListener(e -> selectSingleGenderFilterRadio(tấtCảRadioButton));
         namRadioButton.addActionListener(e -> selectSingleGenderFilterRadio(namRadioButton));
@@ -186,7 +161,6 @@ public class ListEmployeesPanel extends JPanel {
         }
     }
 
-    /** Dong/mo bang loc nang cao ben trai bang danh sach. */
     private void toggleFilterPanel() {
         boolean showing = !filterPanel.isVisible();
         filterPanel.setVisible(showing);
@@ -195,7 +169,6 @@ public class ListEmployeesPanel extends JPanel {
         rootPanel.repaint();
     }
 
-    /** Chuyen man hinh sang trang thai "Ket qua tim kiem" voi tu khoa cho truoc. */
     private void searchByKeyword(String keyword) {
         this.currentKeyword = keyword;
         this.viewMode = MODE_KEYWORD_SEARCH;
@@ -204,18 +177,16 @@ public class ListEmployeesPanel extends JPanel {
         refreshCurrentView();
     }
 
-    /** Ve lai trang thai danh sach binh thuong - bo tim kiem/loc. */
     public void exitSearchMode() {
         this.currentKeyword = "";
         this.viewMode = MODE_BROWSE;
         this.currentPage = 1;
         tìmKiếmNhanhTextField.setText("");
         applyBrowseModeUI();
-        populateFilterCombos(); // dong bo lai neu Phong ban/Chuc vu vua duoc sua o man Danh muc
+        populateFilterCombos();
         refreshCurrentView();
     }
 
-    /** Tim kiem nhanh theo tu khoa go trong o o dau trang - co tu khoa thi hien "Ket qua tim kiem", rong thi ve danh sach thuong. */
     private void performQuickSearch() {
         String keyword = tìmKiếmNhanhTextField.getText().trim();
         if (keyword.isEmpty()) {
@@ -225,7 +196,6 @@ public class ListEmployeesPanel extends JPanel {
         }
     }
 
-    /** Duoc MainFrame goi sau khi them/sua thanh cong de ve lai danh sach binh thuong. */
     public void reloadData() {
         exitSearchMode();
     }
@@ -278,11 +248,6 @@ public class ListEmployeesPanel extends JPanel {
         }
     }
 
-    /**
-     * Doc cac dieu kien loc (phòngBanComboBox, chứcVụComboBox, trạngTháiComboBox,
-     * gioi tinh tấtCả/nam/nữ) va chuyen sang trang thai "Ket qua tim kiem".
-     * Duoc goi khi nguoi dung bam nut "Ap dung bo loc" trong filterPanel.
-     */
     private void applyAdvancedFilters() {
         this.viewMode = MODE_ADVANCED_FILTER;
         this.currentPage = 1;
@@ -290,7 +255,6 @@ public class ListEmployeesPanel extends JPanel {
         refreshCurrentView();
     }
 
-    /** Nut "Xoa loc": dua het bo loc ve mac dinh va tra ve danh sach day du nhu ban dau. */
     private void clearFilters() {
         if (phòngBanComboBox.getItemCount() > 0) {
             phòngBanComboBox.setSelectedIndex(0);
@@ -340,7 +304,7 @@ public class ListEmployeesPanel extends JPanel {
             case "Tạm nghỉ":
                 return "TamNghi";
             default:
-                return null; // "Tat ca trang thai"
+                return null;
         }
     }
 
@@ -357,7 +321,6 @@ public class ListEmployeesPanel extends JPanel {
     }
 
     private void exportResults() {
-        // TODO: xuat ket qua ra Excel/PDF (ngoai pham vi yeu cau hien tai)
     }
 
     private void goToPreviousPage() {
@@ -413,7 +376,6 @@ public class ListEmployeesPanel extends JPanel {
         return rootPanel;
     }
 
-    /** Renderer: hien 2 nut Sua/Xoa o cot "Thao tac" cho moi hang. */
     private static class ActionCellRenderer extends JPanel implements TableCellRenderer {
         ActionCellRenderer() {
             super(new FlowLayout(FlowLayout.CENTER, 4, 2));
@@ -428,7 +390,6 @@ public class ListEmployeesPanel extends JPanel {
         }
     }
 
-    /** Editor: bam that vao nut Sua/Xoa o cot "Thao tac" de thao tac tren dung hang do. */
     private class ActionCellEditor extends AbstractCellEditor implements TableCellEditor {
         private final JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 4, 2));
         private int editingRow = -1;

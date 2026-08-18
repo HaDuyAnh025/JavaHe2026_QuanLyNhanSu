@@ -8,17 +8,8 @@ import java.awt.*;
 import java.sql.SQLException;
 import java.util.Map;
 
-/**
- * Noi dung man hinh "Tong quan" (Dashboard).
- * Duoc nhung vao contentPanel cua MainFrame qua CardLayout,
- * KHONG con la mot JFrame rieng.
- *
- * Cac field ben duoi PHAI trung ten voi thuoc tinh "binding"
- * trong DashboardPanel.form.
- */
 public class DashboardPanel extends JPanel {
 
-    // ===== Sinh tu DashboardPanel.form =====
     private JPanel rootPanel;
     private JButton tảiBáoCáoButton;
 
@@ -29,7 +20,7 @@ public class DashboardPanel extends JPanel {
     private JLabel lblNhanVienMoiValue;
     private JLabel lblNhanVienMoiDelta;
 
-    private JPanel chartPanel;         // holder de nhung thong ke theo phong ban (dang danh sach, khong bieu do)
+    private JPanel chartPanel;
 
     private final NhanVienDAO nhanVienDAO = new NhanVienDAO();
     private final PhongBanDAO phongBanDAO = new PhongBanDAO();
@@ -64,7 +55,6 @@ public class DashboardPanel extends JPanel {
         }
     }
 
-    /** Thong ke nhan vien theo phong ban dang danh sach don gian (khong dung bieu do). */
     private void loadPhongBanStats() throws SQLException {
         Map<String, Integer> soLuongTheoPhongBan = nhanVienDAO.countByPhongBan();
 
@@ -86,7 +76,6 @@ public class DashboardPanel extends JPanel {
     }
 
     private void exportReport() {
-        // TODO: xuat bao cao (PDF/Excel...)
     }
 
     public JPanel getRootPanel() {

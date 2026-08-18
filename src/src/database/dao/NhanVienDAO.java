@@ -20,11 +20,6 @@ public class NhanVienDAO {
                     "LEFT JOIN PHONGBAN pb ON nv.MaPB = pb.MaPB " +
                     "LEFT JOIN CHUCVU cv ON nv.MaCV = cv.MaCV ";
 
-    /**
-     * Them nhan vien moi. MaNV duoc TU SINH theo cu phap MaPhongBan + so thu tu
-     * 3 chu so, dem RIENG cho tung phong ban (vd: IT001, IT002...; KD001...).
-     * Neu chua chon phong ban thi dung tien to "NV". Tra ve MaNV vua sinh.
-     */
     public String insert(NhanVien nv) throws SQLException {
         String maNV = generateNextMaNV(nv.getMaPB());
         nv.setMaNV(maNV);
@@ -40,7 +35,6 @@ public class NhanVienDAO {
         return maNV;
     }
 
-    /** Mo phong so thu tu tiep theo trong pham vi 1 phong ban (khong bao gio trung nhau du co xoa giua chung). */
     private String generateNextMaNV(String maPB) throws SQLException {
         String prefix = (maPB == null || maPB.trim().isEmpty()) ? "NV" : maPB.trim();
         String sql = "SELECT MaNV FROM NHANVIEN WHERE MaNV LIKE ?";
@@ -54,7 +48,6 @@ public class NhanVienDAO {
                     try {
                         max = Math.max(max, Integer.parseInt(suffix));
                     } catch (NumberFormatException ignored) {
-                        // MaNV khac dinh dang mong doi (khong the xay ra voi du lieu do app tu sinh), bo qua
                     }
                 }
             }
@@ -113,7 +106,6 @@ public class NhanVienDAO {
         }
     }
 
-    /** So nhan vien co NgayVaoLam trong thang hien tai (dung cho the "Nhan vien moi" o Dashboard). */
     public int countNewThisMonth() throws SQLException {
         String sql = "SELECT COUNT(*) FROM NHANVIEN " +
                 "WHERE YEAR(NgayVaoLam) = YEAR(CURDATE()) AND MONTH(NgayVaoLam) = MONTH(CURDATE())";
@@ -124,7 +116,6 @@ public class NhanVienDAO {
         }
     }
 
-    /** So luong nhan vien theo tung phong ban (ke ca phong ban 0 nguoi), dung cho thong ke don gian o Dashboard. */
     public java.util.Map<String, Integer> countByPhongBan() throws SQLException {
         String sql = "SELECT pb.TenPhongBan, COUNT(nv.MaNV) AS SoLuong " +
                 "FROM PHONGBAN pb LEFT JOIN NHANVIEN nv ON nv.MaPB = pb.MaPB " +
@@ -251,7 +242,6 @@ public class NhanVienDAO {
         return result;
     }
 
-    /** Gan cac field cua nv vao PreparedStatement (KHONG gom MaNV) bat dau tu startIndex, tra ve index tiep theo. */
     private int bindEmployeeFields(PreparedStatement ps, NhanVien nv, int startIndex) throws SQLException {
         int i = startIndex;
         ps.setString(i++, nv.getHoTen());

@@ -10,7 +10,6 @@ public class DateUtil {
     private DateUtil() {
     }
 
-    /** Tra ve null neu chuoi rong, nem DateTimeParseException neu sai dinh dang. */
     public static LocalDate parse(String ddMMyyyy) {
         if (ddMMyyyy == null || ddMMyyyy.trim().isEmpty()) {
             return null;

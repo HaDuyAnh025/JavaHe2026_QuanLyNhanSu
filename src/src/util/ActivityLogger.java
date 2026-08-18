@@ -11,11 +11,6 @@ import java.io.PrintWriter;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
-/**
- * Ghi nhat ky (append) khi nhan vien bi SUA hoac XOA o man "Quan ly", de
- * biet ai (tai khoan nao) da lam gi, voi nhan vien nao, luc nao.
- * File duoc tao tai logs/nhanvien_activity.txt (canh thu muc chay app).
- */
 public class ActivityLogger {
 
     private static final String LOG_FILE = "logs/nhanvien_activity.txt";
@@ -43,8 +38,6 @@ public class ActivityLogger {
              PrintWriter pw = new PrintWriter(fw)) {
             pw.println(line);
         } catch (IOException e) {
-            // Ghi log la tinh nang phu, khong lam gian doan thao tac chinh
-            // (xoa/sua nhan vien van thanh cong du khong ghi duoc log).
             System.err.println("Khong ghi duoc nhat ky: " + e.getMessage());
         }
     }

@@ -13,12 +13,6 @@ import java.awt.*;
 import java.sql.SQLException;
 import java.util.List;
 
-/**
- * Man hinh "Phan quyen" / Quan ly tai khoan - chi danh cho Admin.
- * Cho phep tao tai khoan moi, khoa/mo khoa tai khoan, va doi vai tro (Admin/NhanVien).
- * Viet thuan Java Swing (khong dung GUI Designer) vi day la man hinh
- * moi hoan toan, khong can khop thiet ke .form co san.
- */
 public class AccountManagementPanel extends JPanel {
 
     private static final int ACTION_COLUMN = 4;
@@ -200,7 +194,6 @@ public class AccountManagementPanel extends JPanel {
         return this;
     }
 
-    /** Renderer: hien 2 nut Khoa/Mo khoa va Doi vai tro o cot "Thao tac" cho moi hang. */
     private static class ActionCellRenderer extends JPanel implements TableCellRenderer {
         ActionCellRenderer() {
             super(new FlowLayout(FlowLayout.CENTER, 4, 2));
@@ -215,7 +208,6 @@ public class AccountManagementPanel extends JPanel {
         }
     }
 
-    /** Editor: bam that vao nut o cot "Thao tac" de thao tac tren dung hang do. */
     private class ActionCellEditor extends AbstractCellEditor implements TableCellEditor {
         private final JPanel panel = new JPanel(new FlowLayout(FlowLayout.CENTER, 4, 2));
         private int editingRow = -1;
